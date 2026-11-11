@@ -1,0 +1,20 @@
+# Go
+*.exe
+*.test
+api/bin/
+
+# Web
+node_modules/
+web/dist/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Tools and OS
+.gstack/
+.claude/settings.local.json
+.idea/
+.DS_Store
+Thumbs.db
