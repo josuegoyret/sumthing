@@ -12,9 +12,11 @@
   touch-action: manipulation;
   user-select: none;
   transition:
-    background-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
+    transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-press) ease,
+    color var(--dur-press) ease,
+    filter var(--dur-press) ease,
+    opacity var(--dur-press) ease;
 }
 
 [data-slot="key"][data-size="wide"] {
@@ -37,7 +39,17 @@
   color: var(--fg-on-primary);
 }
 
-[data-slot="key"]:active {
+@media (hover: hover) and (pointer: fine) {
+  [data-slot="key"]:hover:not(
+      [aria-disabled="true"],
+      [aria-pressed="true"],
+      [data-variant="primary"]
+    ) {
+    filter: brightness(1.15);
+  }
+}
+
+[data-slot="key"]:active:not([aria-disabled="true"]) {
   transform: scale(0.96);
 }
 
@@ -46,7 +58,20 @@
   outline-offset: 2px;
 }
 
-[data-slot="key"]:disabled {
+[data-slot="key"][aria-disabled="true"] {
   opacity: 0.5;
   cursor: default;
+  transition-delay: var(--delay-pending);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="key"]:active:not([aria-disabled="true"]) {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  [data-slot="key"] {
+    border: 1px solid ButtonText;
+  }
 }

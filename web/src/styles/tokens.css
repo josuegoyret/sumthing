@@ -9,7 +9,6 @@
   --bg-tag: rgba(242, 230, 255, 0.12);
   --fg-primary: var(--plum-light);
   --fg-body: rgba(242, 230, 255, 0.6);
-  --fg-secondary: rgba(242, 230, 255, 0.5);
   --fg-on-primary: var(--plum-dark);
   --border-subtle: rgba(242, 230, 255, 0.08);
   --cta: var(--green-bold);
@@ -52,12 +51,8 @@
   --card-width: 400px;
   --card-min-height: 640px;
 
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --dur-fast: 120ms;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --dur-fast: 0ms;
-  }
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --dur-press: 120ms;
+  --dur-reveal: 200ms;
+  --delay-pending: 150ms;
 }

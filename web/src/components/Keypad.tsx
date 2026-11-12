@@ -85,7 +85,9 @@ export default function Keypad({
               ? action.operator === selectedOperator
               : undefined
           }
-          disabled={isPending && action.type === "equals"}
+          aria-disabled={
+            isPending && action.type === "equals" ? true : undefined
+          }
           onClick={() => onPress(action)}
         >
           {label}

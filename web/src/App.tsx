@@ -13,7 +13,7 @@ export default function App({ client }: AppProps) {
         <svg className="app-logo" viewBox="0 0 32 32" aria-hidden="true">
           <path d="M22 9H10l7 7-7 7h12" />
         </svg>
-        <span className="app-name">sumthing</span>
+        <h1 className="app-name">sumthing</h1>
       </header>
       <Calculator client={client} />
     </main>

@@ -10,7 +10,9 @@
 }
 
 .display-expression {
+  max-width: 100%;
   min-height: 1lh;
+  overflow-wrap: anywhere;
   font-size: var(--text-body-l);
   line-height: var(--leading-body-l);
   color: var(--fg-body);
@@ -46,4 +48,28 @@
 
 .display[data-mode="unreachable"] .display-main {
   color: var(--fg-body);
+}
+
+.display:is(
+    [data-mode="result"],
+    [data-mode="error"],
+    [data-mode="unreachable"]
+  )
+  :is(.display-expression, .display-main) {
+  animation: reveal var(--dur-reveal) var(--ease-out);
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes reveal {
+    from {
+      opacity: 0;
+    }
+  }
 }
