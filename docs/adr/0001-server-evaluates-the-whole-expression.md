@@ -14,3 +14,4 @@ The keypad behaves like the iPhone calculator: the user types a full Expression 
 - The evaluator uses the one-stack pattern of LeetCode 227 (Basic Calculator II): `×` and `÷` are applied as soon as they are read, and `+` and `−` wait for the final sum. Recursive descent was considered. It is more code, and it is only necessary for parentheses, which are not in scope. The tokenizer folds a leading or post-Operator `-` into the Number, so the evaluator never sees a unary minus.
 - The API takes an Expression string, not typed operands, so input validation is syntax validation.
 - The frontend only builds the Expression string and displays the Result; it holds no arithmetic.
+- One exception: a development-only mock API may calculate in the browser with plain JavaScript numbers, so the UI can be built and tested before the Go service exists. It is never part of the production bundle, and the real app always gets the Result from the server.
