@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import type { CalculatorClient, Outcome } from "../calculatorClient";
@@ -35,6 +35,19 @@ describe("Calculator", () => {
     expect(screen.getByText("15+6+7")).toBeVisible();
   });
 
+  it("sends the Expression even when keys arrive before a render", async () => {
+    const client = fakeClient({ kind: "result", result: "5" });
+    render(<Calculator client={client} />);
+    const key = (name: string) => screen.getByRole("button", { name });
+
+    act(() => {
+      for (const name of ["2", "plus", "3", "equals"]) key(name).click();
+    });
+
+    expect(await screen.findByRole("status")).toHaveTextContent("5");
+    expect(client.calculate).toHaveBeenCalledWith("2+3");
+  });
+
   it("shows a calculation error", async () => {
     const client = fakeClient({
       kind: "calculationError",
@@ -67,13 +80,15 @@ describe("Calculator", () => {
     expect(client.calculate).toHaveBeenNthCalledWith(2, "2+3");
   });
 
-  it("disables equals while it waits for the server", async () => {
+  it("marks equals as disabled, and keeps it focusable, while it waits", async () => {
     const client = { calculate: vi.fn(() => new Promise<Outcome>(() => {})) };
     const { press } = renderCalculator(client);
 
     await press("2", "plus", "3", "equals");
 
-    expect(screen.getByRole("button", { name: "equals" })).toBeDisabled();
+    const equals = screen.getByRole("button", { name: "equals" });
+    expect(equals).toHaveAttribute("aria-disabled", "true");
+    expect(equals).toHaveFocus();
   });
 
   it("shows the last Operator as pressed until the next Number", async () => {
