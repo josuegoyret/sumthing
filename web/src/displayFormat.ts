@@ -1,19 +1,32 @@
-const WIRE_TO_UI_SYMBOL: Record<string, string> = {
+const UI_SYMBOLS: Record<string, string> = {
+  "+": "+",
+  "-": "−",
   "*": "×",
   "/": "÷",
-  "-": "−",
 };
 
-const NUMBER = /(\d+)(\.\d*)?/g;
-const THOUSANDS_BOUNDARY = /\B(?=(\d{3})+(?!\d))/g;
-const WIRE_SYMBOL = /[*/-]/g;
+const thousandsFormat = new Intl.NumberFormat("en-US");
+
+function withThousands(number: string) {
+  if (number === "") return "";
+  const [integer, fraction] = number.split(".");
+  const grouped = thousandsFormat.format(BigInt(integer));
+  return fraction === undefined ? grouped : `${grouped}.${fraction}`;
+}
 
 export function toDisplay(wireText: string) {
-  return wireText
-    .replace(
-      NUMBER,
-      (_, integer: string, fraction = "") =>
-        integer.replace(THOUSANDS_BOUNDARY, ",") + fraction,
-    )
-    .replace(WIRE_SYMBOL, (symbol) => WIRE_TO_UI_SYMBOL[symbol]);
+  let shown = "";
+  let number = "";
+
+  for (const character of wireText) {
+    const symbol = UI_SYMBOLS[character];
+    if (symbol === undefined) {
+      number += character;
+    } else {
+      shown += withThousands(number) + symbol;
+      number = "";
+    }
+  }
+
+  return shown + withThousands(number);
 }

@@ -26,10 +26,6 @@ export const UNREACHABLE_MESSAGE = "Can't reach the calculator.";
 
 const OPERATORS: Operator[] = ["+", "-", "*", "/"];
 const EMPTY_MAIN_LINE = "0";
-const CURRENT_NUMBER = /[\d.]*$/;
-const TRAILING_OPERATOR = /[+\-*/]$/;
-const OPERATOR_AFTER_FIRST_CHARACTER = /.[+\-*/]/;
-const TRAILING_POINT = /\.$/;
 
 export const initialState: CalculatorState = {
   mode: "typing",
@@ -38,8 +34,20 @@ export const initialState: CalculatorState = {
   message: "",
 };
 
+function operatorOf(character: string | undefined) {
+  return OPERATORS.find((operator) => operator === character);
+}
+
+function endsWithOperatorOrPoint(expression: string) {
+  const last = expression.at(-1);
+  return operatorOf(last) !== undefined || last === ".";
+}
+
 function currentNumber(expression: string) {
-  return expression.match(CURRENT_NUMBER)?.[0] ?? "";
+  const lastOperatorIndex = Math.max(
+    ...OPERATORS.map((operator) => expression.lastIndexOf(operator)),
+  );
+  return expression.slice(lastOperatorIndex + 1);
 }
 
 function withDigit(expression: string, digit: string) {
@@ -58,9 +66,9 @@ function withPoint(expression: string) {
 
 function withOperator(expression: string, operator: Operator) {
   if (expression === "") return EMPTY_MAIN_LINE + operator;
-  const base = expression
-    .replace(TRAILING_OPERATOR, "")
-    .replace(TRAILING_POINT, "");
+  const base = endsWithOperatorOrPoint(expression)
+    ? expression.slice(0, -1)
+    : expression;
   return base + operator;
 }
 
@@ -102,10 +110,13 @@ function afterOutcome(
 }
 
 function sent(state: CalculatorState): CalculatorState {
-  if (!OPERATOR_AFTER_FIRST_CHARACTER.test(state.expression)) return state;
-  const expression = state.expression
-    .replace(TRAILING_OPERATOR, "")
-    .replace(TRAILING_POINT, "");
+  const hasOperator = OPERATORS.some(
+    (operator) => state.expression.indexOf(operator, 1) !== -1,
+  );
+  if (!hasOperator) return state;
+  const expression = endsWithOperatorOrPoint(state.expression)
+    ? state.expression.slice(0, -1)
+    : state.expression;
   return { ...initialState, mode: "pending", expression };
 }
 
@@ -154,9 +165,7 @@ export function screenOf(state: CalculatorState) {
     error: state.sentExpression,
     unreachable: state.expression,
   }[state.mode];
-  const trailingOperator = OPERATORS.find((operator) =>
-    state.expression.endsWith(operator),
-  );
+  const trailingOperator = operatorOf(state.expression.at(-1));
 
   return {
     mode: state.mode,
