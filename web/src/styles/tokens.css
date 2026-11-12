@@ -3,6 +3,7 @@
   --plum-light: #f2e6ff;
   --green-bold: #9ff4d9;
   --pink-bold: #ff5667;
+  --plum-bold: #8333d4;
 
   --bg-canvas: var(--plum-dark);
   --bg-card: rgba(242, 230, 255, 0.04);
@@ -14,6 +15,7 @@
   --cta: var(--green-bold);
   --danger: var(--pink-bold);
   --focus-ring: var(--plum-light);
+  --logo-tile: var(--plum-bold);
 
   --font-sans: "Satoshi", system-ui, -apple-system, sans-serif;
   --weight-regular: 400;

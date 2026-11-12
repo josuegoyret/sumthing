@@ -13,34 +13,38 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--fg-body);
+  color: var(--fg-primary);
 }
 
 .app-logo {
-  width: var(--space-4);
-  height: var(--space-4);
+  width: var(--space-8);
+  height: var(--space-8);
+}
+
+.app-logo-tile {
+  fill: var(--logo-tile);
+}
+
+.app-logo-sigma {
   fill: none;
-  stroke: currentColor;
-  stroke-width: 3;
+  stroke: var(--fg-primary);
+  stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .app-name {
-  font-size: var(--text-label);
-  line-height: var(--leading-label);
-  letter-spacing: var(--tracking-label);
+  font-size: var(--text-heading-3);
+  line-height: var(--leading-heading-3);
   font-weight: var(--weight-medium);
-  text-transform: uppercase;
 }
 
 @media (min-width: 640px) {
   .app {
     align-items: center;
-    justify-content: center;
   }
 
   .app-header {
-    width: var(--card-width);
+    align-self: flex-start;
   }
 }

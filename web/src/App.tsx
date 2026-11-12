@@ -11,7 +11,8 @@ export default function App({ client }: AppProps) {
     <main className="app">
       <header className="app-header">
         <svg className="app-logo" viewBox="0 0 32 32" aria-hidden="true">
-          <path d="M22 9H10l7 7-7 7h12" />
+          <rect className="app-logo-tile" width="32" height="32" rx="8" />
+          <path className="app-logo-sigma" d="M22 9H10l7 7-7 7h12" />
         </svg>
         <h1 className="app-name">sumthing</h1>
       </header>

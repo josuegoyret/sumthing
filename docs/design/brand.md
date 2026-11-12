@@ -13,7 +13,7 @@ The checklist for every design screenshot. If the screen breaks a rule here, it 
 | Primary Plum Dark | `#201733` | Dark backgrounds | The canvas |
 | Primary Plum Light | `#F2E6FF` | Font and icons on dark | Digits, the Result |
 | Bold Green | `#9FF4D9` | **CTAs on dark**, success | The `=` key only |
-| Bold Plum | `#8333D4` | CTAs on light, brand expression | Not used on dark |
+| Bold Plum | `#8333D4` | CTAs on light, brand expression | The logo tile only |
 | Plum 200 | `#C9A1F4` | Bold Plum tint (token CSS) | Operator keys |
 | Bold Pink | `#FF5667` | Promos and pricing. Token CSS: errors | Error messages |
 | Bold Orange | `#FF8100` | Another product line **only** | Never |
