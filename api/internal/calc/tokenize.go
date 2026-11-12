@@ -1,10 +1,16 @@
 package calc
 
-import "math/big"
+import (
+	"math/big"
+	"strings"
+)
+
+const squareRootSign = "√"
 
 type token struct {
-	number   *big.Rat
-	operator byte
+	number    *big.Rat
+	isPercent bool
+	operator  byte
 }
 
 func (t token) isOperator() bool {
@@ -16,11 +22,18 @@ func isDigit(character byte) bool {
 }
 
 func isOperator(character byte) bool {
-	return character == '+' || character == '-' || character == '*' || character == '/'
+	return character == '+' || character == '-' || character == '*' || character == '/' || character == '^'
 }
 
 func expectsNumber(tokens []token) bool {
 	return len(tokens) == 0 || tokens[len(tokens)-1].isOperator()
+}
+
+func startsNumber(expression string, i int, tokens []token) bool {
+	character := expression[i]
+	return isDigit(character) ||
+		strings.HasPrefix(expression[i:], squareRootSign) ||
+		(character == '-' && expectsNumber(tokens))
 }
 
 func tokenize(expression string) ([]token, error) {
@@ -30,12 +43,12 @@ func tokenize(expression string) ([]token, error) {
 		switch {
 		case character == ' ':
 			i++
-		case isDigit(character) || (character == '-' && expectsNumber(tokens)):
+		case startsNumber(expression, i, tokens):
 			number, end, err := readNumber(expression, i)
 			if err != nil {
 				return nil, err
 			}
-			tokens = append(tokens, token{number: number})
+			tokens = append(tokens, number)
 			i = end
 		case isOperator(character):
 			tokens = append(tokens, token{operator: character})
@@ -58,27 +71,44 @@ func readDigits(expression string, start int) int {
 	return end
 }
 
-func readNumber(expression string, start int) (*big.Rat, int, error) {
-	integerStart := start
-	if expression[start] == '-' {
-		integerStart++
+func readNumber(expression string, start int) (token, int, error) {
+	digitsStart := start
+	isNegative := expression[digitsStart] == '-'
+	if isNegative {
+		digitsStart++
 	}
-	end := readDigits(expression, integerStart)
-	if end == integerStart {
-		return nil, 0, ErrInvalidExpression
+	isSquareRoot := strings.HasPrefix(expression[digitsStart:], squareRootSign)
+	if isSquareRoot {
+		digitsStart += len(squareRootSign)
+	}
+
+	end := readDigits(expression, digitsStart)
+	if end == digitsStart {
+		return token{}, 0, ErrInvalidExpression
 	}
 	if end < len(expression) && expression[end] == '.' {
 		fractionStart := end + 1
 		end = readDigits(expression, fractionStart)
 		if end == fractionStart {
-			return nil, 0, ErrInvalidExpression
+			return token{}, 0, ErrInvalidExpression
 		}
 	}
-	number, ok := new(big.Rat).SetString(expression[start:end])
+	number, ok := new(big.Rat).SetString(expression[digitsStart:end])
 	if !ok {
-		return nil, 0, ErrInvalidExpression
+		return token{}, 0, ErrInvalidExpression
 	}
-	return number, end, nil
+
+	if isSquareRoot {
+		number = squareRoot(number)
+	}
+	if isNegative {
+		number.Neg(number)
+	}
+	isPercent := end < len(expression) && expression[end] == '%'
+	if isPercent {
+		end++
+	}
+	return token{number: number, isPercent: isPercent}, end, nil
 }
 
 func hasValidShape(tokens []token) bool {
@@ -88,6 +118,10 @@ func hasValidShape(tokens []token) bool {
 	for i, t := range tokens {
 		wantsOperator := i%2 == 1
 		if t.isOperator() != wantsOperator {
+			return false
+		}
+		isPowerChain := t.operator == '^' && i+2 < len(tokens) && tokens[i+2].operator == '^'
+		if isPowerChain {
 			return false
 		}
 	}

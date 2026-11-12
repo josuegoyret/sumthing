@@ -3,28 +3,53 @@ package calc
 import "math/big"
 
 func evaluate(tokens []token) (*big.Rat, error) {
-	stack := []*big.Rat{tokens[0].number}
-	for i := 1; i < len(tokens); i += 2 {
-		operator, number := tokens[i].operator, tokens[i+1].number
-		last := len(stack) - 1
-		switch operator {
-		case '+':
-			stack = append(stack, number)
-		case '-':
-			stack = append(stack, new(big.Rat).Neg(number))
-		case '*':
-			stack[last] = new(big.Rat).Mul(stack[last], number)
-		case '/':
-			if number.Sign() == 0 {
-				return nil, ErrDivisionByZero
-			}
-			stack[last] = new(big.Rat).Quo(stack[last], number)
-		}
+	tokens, err := withPowersFolded(tokens)
+	if err != nil {
+		return nil, err
 	}
 
 	sum := new(big.Rat)
-	for _, number := range stack {
-		sum.Add(sum, number)
+	term := plainValue(tokens[0])
+	for i := 1; i < len(tokens); i += 2 {
+		operator, next := tokens[i].operator, tokens[i+1]
+		switch operator {
+		case '+', '-':
+			number := plainValue(next)
+			if next.isPercent {
+				number = new(big.Rat).Mul(new(big.Rat).Add(sum, term), number)
+			}
+			sum.Add(sum, term)
+			term = number
+			if operator == '-' {
+				term = new(big.Rat).Neg(number)
+			}
+		case '*':
+			term = new(big.Rat).Mul(term, plainValue(next))
+		case '/':
+			divisor := plainValue(next)
+			if divisor.Sign() == 0 {
+				return nil, ErrDivisionByZero
+			}
+			term = new(big.Rat).Quo(term, divisor)
+		}
 	}
-	return sum, nil
+	return sum.Add(sum, term), nil
+}
+
+func withPowersFolded(tokens []token) ([]token, error) {
+	folded := []token{tokens[0]}
+	for i := 1; i < len(tokens); i += 2 {
+		operator, next := tokens[i], tokens[i+1]
+		if operator.operator != '^' {
+			folded = append(folded, operator, next)
+			continue
+		}
+		last := len(folded) - 1
+		result, err := power(plainValue(folded[last]), plainValue(next))
+		if err != nil {
+			return nil, err
+		}
+		folded[last] = token{number: result}
+	}
+	return folded, nil
 }

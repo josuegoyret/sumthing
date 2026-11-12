@@ -76,6 +76,10 @@ func errorFor(err error) apiError {
 		return apiError{http.StatusBadRequest, "INVALID_EXPRESSION", "The expression is not valid."}
 	case errors.Is(err, calc.ErrDivisionByZero):
 		return apiError{http.StatusUnprocessableEntity, "DIVISION_BY_ZERO", "Can't divide by zero."}
+	case errors.Is(err, calc.ErrExponentOutOfRange):
+		return apiError{http.StatusUnprocessableEntity, "EXPONENT_OUT_OF_RANGE", "The exponent must be a whole number from 0 to 99."}
+	case errors.Is(err, calc.ErrResultTooLarge):
+		return apiError{http.StatusUnprocessableEntity, "RESULT_TOO_LARGE", "The result is too large."}
 	default:
 		return apiError{http.StatusInternalServerError, "INTERNAL", "Something went wrong. Try again."}
 	}

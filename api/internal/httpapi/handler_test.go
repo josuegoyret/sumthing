@@ -42,6 +42,8 @@ func TestCalculateReturnsAnError(t *testing.T) {
 		{"when the expression is too long", `{"expression":"` + strings.Repeat("1", 101) + `"}`, http.StatusBadRequest, "EXPRESSION_TOO_LONG"},
 		{"when the expression is not valid", `{"expression":"5++3"}`, http.StatusBadRequest, "INVALID_EXPRESSION"},
 		{"when it divides by zero", `{"expression":"5/0"}`, http.StatusUnprocessableEntity, "DIVISION_BY_ZERO"},
+		{"when the Exponent is out of range", `{"expression":"2^100"}`, http.StatusUnprocessableEntity, "EXPONENT_OUT_OF_RANGE"},
+		{"when the Result is too large", `{"expression":"99999^99"}`, http.StatusUnprocessableEntity, "RESULT_TOO_LARGE"},
 	}
 
 	for _, tt := range tests {
