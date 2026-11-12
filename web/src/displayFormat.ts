@@ -3,6 +3,9 @@ const UI_SYMBOLS: Record<string, string> = {
   "-": "−",
   "*": "×",
   "/": "÷",
+  "^": "^",
+  "√": "√",
+  "%": "%",
 };
 
 const thousandsFormat = new Intl.NumberFormat("en-US");

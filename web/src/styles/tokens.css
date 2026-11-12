@@ -55,4 +55,5 @@
   --dur-press: 120ms;
   --dur-reveal: 200ms;
   --delay-pending: 150ms;
+  --stagger-step: 30ms;
 }

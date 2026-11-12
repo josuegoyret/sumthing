@@ -12,6 +12,8 @@ describe("toDisplay", () => {
     ["a long Result", "22333.3333333333", "22,333.3333333333"],
     ["a trailing point", "1000.", "1,000."],
     ["a trailing Operator", "1000*", "1,000×"],
+    ["a power", "1234^2", "1,234^2"],
+    ["a square root and a Percent", "√1234%", "√1,234%"],
   ])("shows %s", (_, wire, shown) => {
     expect(toDisplay(wire)).toBe(shown);
   });

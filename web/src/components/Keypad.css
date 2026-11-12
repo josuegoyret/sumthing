@@ -1,5 +1,80 @@
 .keypad {
+  display: flex;
+  flex-direction: column;
+}
+
+.keypad-grid,
+.keypad-functions {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--space-4);
+}
+
+.keypad-functions {
+  height: auto;
+  min-height: 0;
+  margin-block-end: var(--space-4);
+  interpolate-size: allow-keywords;
+  overflow: clip;
+  overflow-clip-margin: var(--space-1);
+  transition:
+    height var(--dur-reveal) var(--ease-out),
+    margin-block-end var(--dur-reveal) var(--ease-out),
+    display var(--dur-reveal) allow-discrete;
+}
+
+.keypad-functions[hidden] {
+  display: none;
+  height: 0;
+  margin-block-end: 0;
+  mask-image: linear-gradient(to bottom, black, transparent);
+  transition-duration: var(--dur-press);
+  transition-delay: var(--stagger-step);
+}
+
+@starting-style {
+  .keypad-functions:not([hidden]) {
+    height: 0;
+    margin-block-end: 0;
+  }
+}
+
+.keypad-functions[hidden] [data-slot="key"] {
+  opacity: 0;
+  filter: blur(2px);
+}
+
+.keypad-functions:not([hidden]) [data-slot="key"] {
+  animation: key-enter var(--dur-reveal) var(--ease-out) backwards;
+}
+
+.keypad-functions [data-slot="key"]:nth-child(2) {
+  animation-delay: var(--stagger-step);
+}
+
+.keypad-functions [data-slot="key"]:nth-child(3) {
+  animation-delay: calc(2 * var(--stagger-step));
+}
+
+.keypad-functions [data-slot="key"]:nth-child(4) {
+  animation-delay: calc(3 * var(--stagger-step));
+}
+
+@keyframes key-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2)) scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .keypad-functions {
+    transition: none;
+  }
+
+  @keyframes key-enter {
+    from {
+      opacity: 0;
+    }
+  }
 }

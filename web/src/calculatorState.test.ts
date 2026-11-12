@@ -14,6 +14,10 @@ const KEY_ACTIONS: Record<string, Action> = {
   "-": { type: "operator", operator: "-" },
   "*": { type: "operator", operator: "*" },
   "/": { type: "operator", operator: "/" },
+  "^": { type: "operator", operator: "^" },
+  "√": { type: "squareRoot" },
+  s: { type: "square" },
+  "%": { type: "percent" },
   C: { type: "clear" },
   "<": { type: "backspace" },
 };
@@ -68,8 +72,31 @@ describe("typing", () => {
     ["removes the last character", "123<", "12"],
     ["shows 0 when everything is removed", "1<", "0"],
     ["clears everything", "12+3C", "0"],
+    ["types a square root", "√9", "√9"],
+    ["types a square root after an Operator", "2+√9", "2+√9"],
+    ["ignores a square root after a digit", "5√", "5"],
+    ["ignores a second square root", "√√9", "√9"],
+    ["ignores an Operator after a bare square root", "√+", "√"],
+    ["types 0. for a point after a square root", "√.", "√0."],
+    ["replaces a lone 0 after a square root", "√07", "√7"],
+    ["types a power", "2^3", "2^3"],
+    ["ignores a second power in one term", "2^3^", "2^3"],
+    ["ignores a power that would make a chain", "2^3*^", "2^3×"],
+    ["types a square", "5s", "5^2"],
+    ["ignores a square with no Number", "5+s", "5+"],
+    ["types a Percent", "50%", "50%"],
+    ["drops a trailing point before a Percent", "5.%", "5%"],
+    ["ignores a Percent with no Number", "5+%", "5+"],
+    ["ignores a second Percent", "5%%", "5%"],
+    ["ignores digits after a Percent", "5%3", "5%"],
+    ["types an Operator after a Percent", "5%+", "5%+"],
+    ["removes a Percent", "5%<", "5"],
   ])("%s", (_, keys, mainLine) => {
     expect(screenOf(press(keys)).mainLine).toBe(mainLine);
+  });
+
+  it("selects the power like an Operator", () => {
+    expect(screenOf(press("2^")).selectedOperator).toBe("^");
   });
 
   it("selects the last Operator until the next Number", () => {
@@ -133,6 +160,10 @@ describe("sendableExpression", () => {
     ["the Expression", "15+6", "15+6"],
     ["the Expression without a trailing Operator", "5+2*", "5+2"],
     ["the Expression without a trailing point", "5+2.", "5+2"],
+    ["a lone square root", "√9", "√9"],
+    ["a lone Percent", "50%", "50%"],
+    ["the Expression without a bare square root", "2+√", "2"],
+    ["the Expression without a trailing power", "2^", "2"],
   ])("is %s", (_, keys, sent) => {
     expect(sendableExpression(press(keys))).toBe(sent);
   });
@@ -158,6 +189,17 @@ describe("after a Result", () => {
   it("groups a long Result", () => {
     const big = nextState(press("22333*1="), result("22333"));
     expect(screenOf(big).mainLine).toBe("22,333");
+  });
+
+  it.each([
+    ["a Percent", "%", "28%"],
+    ["a square", "s", "28^2"],
+  ])("continues from the Result with %s", (_, keys, mainLine) => {
+    expect(screenOf(press(keys, shown)).mainLine).toBe(mainLine);
+  });
+
+  it("starts a new Expression with a square root", () => {
+    expect(screenOf(press("√", shown)).mainLine).toBe("√");
   });
 
   it("continues from the Result with an Operator", () => {

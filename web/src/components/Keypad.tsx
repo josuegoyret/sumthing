@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import { type ComponentProps, useId, useState } from "react";
 import type { KeyAction, Operator } from "../calculatorState";
 import Key from "./Key";
 import "./Keypad.css";
@@ -24,13 +24,12 @@ function operator(label: string, value: Operator, name: string): KeyDefinition {
   };
 }
 
-const KEYS: KeyDefinition[] = [
+const EDIT_KEYS: KeyDefinition[] = [
   {
     label: "C",
     name: "clear",
     action: { type: "clear" },
     variant: "secondary",
-    size: "wide",
   },
   {
     label: "⌫",
@@ -38,6 +37,9 @@ const KEYS: KeyDefinition[] = [
     action: { type: "backspace" },
     variant: "secondary",
   },
+];
+
+const KEYS: KeyDefinition[] = [
   operator("÷", "/", "divide"),
   digit("7"),
   digit("8"),
@@ -61,6 +63,28 @@ const KEYS: KeyDefinition[] = [
   },
 ];
 
+const FUNCTION_KEYS: KeyDefinition[] = [
+  {
+    label: "√",
+    name: "square root",
+    action: { type: "squareRoot" },
+    variant: "operator",
+  },
+  {
+    label: "x²",
+    name: "square",
+    action: { type: "square" },
+    variant: "operator",
+  },
+  operator("^", "^", "power"),
+  {
+    label: "%",
+    name: "percent",
+    action: { type: "percent" },
+    variant: "operator",
+  },
+];
+
 type KeypadProps = {
   selectedOperator: Operator | null;
   isPending: boolean;
@@ -72,27 +96,51 @@ export default function Keypad({
   isPending,
   onPress,
 }: KeypadProps) {
+  const [areFunctionsOpen, setAreFunctionsOpen] = useState(false);
+  const functionsId = useId();
+
+  function keyFor({ label, action, name, variant, size }: KeyDefinition) {
+    return (
+      <Key
+        key={label}
+        variant={variant}
+        size={size}
+        aria-label={name}
+        aria-pressed={
+          action.type === "operator"
+            ? action.operator === selectedOperator
+            : undefined
+        }
+        aria-disabled={isPending && action.type === "equals" ? true : undefined}
+        onClick={() => onPress(action)}
+      >
+        {label}
+      </Key>
+    );
+  }
+
   return (
     <div className="keypad" role="group" aria-label="Keypad">
-      {KEYS.map(({ label, action, name, variant, size }) => (
+      <div
+        id={functionsId}
+        className="keypad-functions"
+        hidden={!areFunctionsOpen}
+      >
+        {FUNCTION_KEYS.map(keyFor)}
+      </div>
+      <div className="keypad-grid">
+        {EDIT_KEYS.map(keyFor)}
         <Key
-          key={label}
-          variant={variant}
-          size={size}
-          aria-label={name}
-          aria-pressed={
-            action.type === "operator"
-              ? action.operator === selectedOperator
-              : undefined
-          }
-          aria-disabled={
-            isPending && action.type === "equals" ? true : undefined
-          }
-          onClick={() => onPress(action)}
+          variant="secondary"
+          aria-label="More functions"
+          aria-expanded={areFunctionsOpen}
+          aria-controls={functionsId}
+          onClick={() => setAreFunctionsOpen(!areFunctionsOpen)}
         >
-          {label}
+          f(x)
         </Key>
-      ))}
+        {KEYS.map(keyFor)}
+      </div>
     </div>
   );
 }

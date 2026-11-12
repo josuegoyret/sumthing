@@ -12,13 +12,58 @@
 .display-expression,
 .display-main {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: row-reverse;
   align-items: flex-end;
   width: 100%;
   height: 1lh;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
   white-space: nowrap;
   mask-image: linear-gradient(to right, transparent, black var(--space-8));
+}
+
+.display-expression::-webkit-scrollbar,
+.display-main::-webkit-scrollbar {
+  display: none;
+}
+
+@property --fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@supports (animation-timeline: scroll()) {
+  .display-expression,
+  .display-main {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black var(--fade-start),
+      black calc(100% - var(--fade-end)),
+      transparent
+    );
+    animation: fade-hidden-digits linear both;
+    animation-timeline: scroll(self inline);
+  }
+}
+
+@keyframes fade-hidden-digits {
+  from {
+    --fade-start: var(--space-8);
+    --fade-end: 0px;
+  }
+  to {
+    --fade-start: 0px;
+    --fade-end: var(--space-8);
+  }
 }
 
 .display-expression {
@@ -53,6 +98,19 @@
   color: var(--danger);
 }
 
+.display:is([data-mode="error"], [data-mode="unreachable"]) .display-main {
+  white-space: normal;
+  text-align: right;
+  mask-image: none;
+}
+
+.display:is([data-mode="error"], [data-mode="unreachable"])
+  .display-main
+  [data-size] {
+  font-size: var(--text-heading-3);
+  line-height: var(--leading-heading-3);
+}
+
 .display[data-mode="unreachable"] .display-main {
   color: var(--fg-body);
 }
@@ -62,7 +120,8 @@
     [data-mode="error"],
     [data-mode="unreachable"]
   )
-  :is(.display-expression, .display-main) {
+  :is(.display-expression, .display-main)
+  > span {
   animation: reveal var(--dur-reveal) var(--ease-out);
 }
 

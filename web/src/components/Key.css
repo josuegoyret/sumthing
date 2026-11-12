@@ -29,7 +29,8 @@
   background: var(--bg-tag);
 }
 
-[data-slot="key"][data-variant="operator"][aria-pressed="true"] {
+[data-slot="key"][data-variant="operator"][aria-pressed="true"],
+[data-slot="key"][aria-expanded="true"] {
   background: var(--fg-primary);
   color: var(--fg-on-primary);
 }
@@ -43,6 +44,7 @@
   [data-slot="key"]:hover:not(
       [aria-disabled="true"],
       [aria-pressed="true"],
+      [aria-expanded="true"],
       [data-variant="primary"]
     ) {
     filter: brightness(1.15);

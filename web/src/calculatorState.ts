@@ -1,12 +1,15 @@
 import type { Outcome } from "./calculatorClient";
 import { toDisplay } from "./displayFormat";
 
-export type Operator = "+" | "-" | "*" | "/";
+export type Operator = "+" | "-" | "*" | "/" | "^";
 
 type EditAction =
   | { type: "digit"; digit: string }
   | { type: "point" }
   | { type: "operator"; operator: Operator }
+  | { type: "squareRoot" }
+  | { type: "square" }
+  | { type: "percent" }
   | { type: "clear" }
   | { type: "backspace" };
 
@@ -29,8 +32,11 @@ export type CalculatorState = {
 export const MAX_EXPRESSION_LENGTH = 100;
 export const UNREACHABLE_MESSAGE = "Can't reach the calculator.";
 
-const OPERATORS: Operator[] = ["+", "-", "*", "/"];
+const OPERATORS: Operator[] = ["+", "-", "*", "/", "^"];
 const EMPTY_MAIN_LINE = "0";
+const SQUARE_ROOT = "√";
+const PERCENT = "%";
+const SQUARE_EXPONENT = "2";
 
 export const initialState: CalculatorState = {
   mode: "typing",
@@ -48,33 +54,64 @@ function endsWithOperatorOrPoint(expression: string) {
   return operatorOf(last) !== undefined || last === ".";
 }
 
-function currentNumber(expression: string) {
-  const lastOperatorIndex = Math.max(
+function lastOperatorIndex(expression: string) {
+  return Math.max(
     ...OPERATORS.map((operator) => expression.lastIndexOf(operator)),
   );
-  return expression.slice(lastOperatorIndex + 1);
+}
+
+function lastOperatorOf(expression: string) {
+  const index = lastOperatorIndex(expression);
+  return index > 0 ? expression[index] : undefined;
+}
+
+function currentNumber(expression: string) {
+  const number = expression.slice(lastOperatorIndex(expression) + 1);
+  return number.startsWith(SQUARE_ROOT) ? number.slice(1) : number;
 }
 
 function withDigit(expression: string, digit: string) {
-  if (currentNumber(expression) === "0") {
-    return expression.slice(0, -1) + digit;
-  }
+  const number = currentNumber(expression);
+  if (number.includes(PERCENT)) return expression;
+  if (number === "0") return expression.slice(0, -1) + digit;
   return expression + digit;
 }
 
 function withPoint(expression: string) {
   const number = currentNumber(expression);
-  if (number.includes(".")) return expression;
+  if (number.includes(".") || number.includes(PERCENT)) return expression;
   if (number === "") return expression + "0.";
   return expression + ".";
 }
 
 function withOperator(expression: string, operator: Operator) {
   if (expression === "") return EMPTY_MAIN_LINE + operator;
+  if (expression.endsWith(SQUARE_ROOT)) return expression;
   const base = endsWithOperatorOrPoint(expression)
     ? expression.slice(0, -1)
     : expression;
-  return base + operator;
+  const makesPowerChain = operator === "^" && lastOperatorOf(base) === "^";
+  return makesPowerChain ? expression : base + operator;
+}
+
+function withSquareRoot(expression: string) {
+  const canStartNumber =
+    currentNumber(expression) === "" && !expression.endsWith(SQUARE_ROOT);
+  return canStartNumber ? expression + SQUARE_ROOT : expression;
+}
+
+function withSquare(expression: string) {
+  const withPower = withOperator(expression, "^");
+  const hasNumber = currentNumber(expression) !== "";
+  if (!hasNumber || withPower === expression) return expression;
+  return withDigit(withPower, SQUARE_EXPONENT);
+}
+
+function withPercent(expression: string) {
+  const number = currentNumber(expression);
+  if (number === "" || number.includes(PERCENT)) return expression;
+  const base = expression.endsWith(".") ? expression.slice(0, -1) : expression;
+  return base + PERCENT;
 }
 
 function withoutLastCharacter(expression: string) {
@@ -114,15 +151,23 @@ function afterOutcome(
   }
 }
 
+function withoutUnfinishedEnd(expression: string) {
+  let finished = expression;
+  while (endsWithOperatorOrPoint(finished) || finished.endsWith(SQUARE_ROOT)) {
+    finished = finished.slice(0, -1);
+  }
+  return finished;
+}
+
 export function sendableExpression(state: CalculatorState) {
   if (state.mode !== "typing" && state.mode !== "unreachable") return null;
-  const hasOperator = OPERATORS.some(
-    (operator) => state.expression.indexOf(operator, 1) !== -1,
-  );
-  if (!hasOperator) return null;
-  return endsWithOperatorOrPoint(state.expression)
-    ? state.expression.slice(0, -1)
-    : state.expression;
+  const entered = state.expression;
+  const needsServer =
+    lastOperatorOf(entered) !== undefined ||
+    entered.includes(SQUARE_ROOT) ||
+    entered.includes(PERCENT);
+  const expression = withoutUnfinishedEnd(entered);
+  return needsServer && expression !== "" ? expression : null;
 }
 
 export function nextState(
@@ -146,6 +191,12 @@ export function nextState(
       return typed(state, withPoint(freshOrCurrent));
     case "operator":
       return typed(state, withOperator(continuable, action.operator));
+    case "squareRoot":
+      return typed(state, withSquareRoot(freshOrCurrent));
+    case "square":
+      return typed(state, withSquare(continuable));
+    case "percent":
+      return typed(state, withPercent(continuable));
     case "backspace":
       return startsFresh
         ? state

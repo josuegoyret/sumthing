@@ -42,7 +42,7 @@ describe("Calculator", () => {
     await press("2", "plus", "3", "equals");
 
     expect(document.querySelector(".display-main")).toHaveTextContent("2+3");
-    expect(document.querySelector(".display-expression")).toBeEmptyDOMElement();
+    expect(document.querySelector(".display-expression")?.textContent).toBe("");
     expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true");
   });
 
@@ -118,6 +118,40 @@ describe("Calculator", () => {
       "false",
     );
   });
+
+  it("opens the function keys with the f(x) toggle", async () => {
+    const { press } = renderCalculator(fakeClient());
+    const toggle = screen.getByRole("button", { name: "More functions" });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("button", { name: "percent" })).toBeNull();
+
+    await press("More functions");
+
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "percent" })).toBeVisible();
+  });
+
+  it("sends a Percent of the left side", async () => {
+    const client = fakeClient({ kind: "result", result: "55" });
+    const { press } = renderCalculator(client);
+
+    await press("More functions", "5", "0", "plus", "1", "0", "percent");
+    await press("equals");
+
+    expect(client.calculate).toHaveBeenCalledWith("50+10%");
+    expect(await screen.findByRole("status")).toHaveTextContent("55");
+  });
+
+  it.each(["square root", "square", "power", "percent"])(
+    "names the %s key",
+    async (name) => {
+      const { press } = renderCalculator(fakeClient());
+
+      await press("More functions");
+
+      expect(screen.getByRole("button", { name })).toBeInTheDocument();
+    },
+  );
 
   it.each([
     "clear",

@@ -26,8 +26,10 @@ export default function Display({
 
   return (
     <div className="display" data-mode={mode}>
-      <p className="display-expression">{expressionLine}</p>
-      <p className="display-main">
+      <p key={expressionLine} className="display-expression">
+        <span>{expressionLine}</span>
+      </p>
+      <p key={mainLine} className="display-main">
         <span data-size={mainLineSize(mainLine)}>{mainLine}</span>
       </p>
       <p
