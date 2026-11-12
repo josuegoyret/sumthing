@@ -5,6 +5,7 @@ import {
   initialState,
   nextState,
   screenOf,
+  sendableExpression,
 } from "./calculatorState";
 
 const KEY_ACTIONS: Record<string, Action> = {
@@ -13,17 +14,21 @@ const KEY_ACTIONS: Record<string, Action> = {
   "-": { type: "operator", operator: "-" },
   "*": { type: "operator", operator: "*" },
   "/": { type: "operator", operator: "/" },
-  "=": { type: "equals" },
   C: { type: "clear" },
   "<": { type: "backspace" },
 };
 
-function actionFor(key: string): Action {
-  return KEY_ACTIONS[key] ?? { type: "digit", digit: key };
+function afterKey(state: CalculatorState, key: string) {
+  if (key !== "=") {
+    return nextState(state, KEY_ACTIONS[key] ?? { type: "digit", digit: key });
+  }
+  const expression = sendableExpression(state);
+  if (expression === null) return state;
+  return nextState(state, { type: "sent", expression });
 }
 
 function press(keys: string, from: CalculatorState = initialState) {
-  return [...keys].map(actionFor).reduce(nextState, from);
+  return [...keys].reduce(afterKey, from);
 }
 
 function result(value: string): Action {
@@ -97,9 +102,45 @@ describe("equals", () => {
     expect(press(keys).expression).toBe(sent);
   });
 
+  it("shows the Expression above and an empty main line while it waits", () => {
+    expect(screenOf(press("2+3="))).toMatchObject({
+      expressionLine: "2+3",
+      mainLine: "",
+      mode: "pending",
+    });
+  });
+
   it("ignores keys while pending", () => {
     const pending = press("2+3=");
     expect(press("4", pending)).toBe(pending);
+  });
+});
+
+describe("sendableExpression", () => {
+  const negativeNumber = press("+<", nextState(press("1-4="), result("-3")));
+
+  it.each([
+    ["no Operator", press("15")],
+    ["only a leading minus", negativeNumber],
+    ["pending", press("2+3=")],
+    ["a Result", nextState(press("2+3="), result("5"))],
+    ["a calculation error", nextState(press("5/0="), divisionByZero)],
+  ])("is null with %s", (_, state) => {
+    expect(sendableExpression(state)).toBeNull();
+  });
+
+  it.each([
+    ["the Expression", "15+6", "15+6"],
+    ["the Expression without a trailing Operator", "5+2*", "5+2"],
+    ["the Expression without a trailing point", "5+2.", "5+2"],
+  ])("is %s", (_, keys, sent) => {
+    expect(sendableExpression(press(keys))).toBe(sent);
+  });
+
+  it("is the Expression again when unreachable", () => {
+    expect(sendableExpression(nextState(press("2+3="), unreachable))).toBe(
+      "2+3",
+    );
   });
 });
 

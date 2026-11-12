@@ -3,16 +3,19 @@ import { toDisplay } from "./displayFormat";
 
 export type Operator = "+" | "-" | "*" | "/";
 
-export type Action =
+type EditAction =
   | { type: "digit"; digit: string }
   | { type: "point" }
   | { type: "operator"; operator: Operator }
-  | { type: "equals" }
   | { type: "clear" }
-  | { type: "backspace" }
-  | { type: "outcome"; outcome: Outcome };
+  | { type: "backspace" };
 
-export type KeyAction = Exclude<Action, { type: "outcome" }>;
+export type KeyAction = EditAction | { type: "equals" };
+
+export type Action =
+  | EditAction
+  | { type: "sent"; expression: string }
+  | { type: "outcome"; outcome: Outcome };
 
 export type Mode = "typing" | "pending" | "result" | "error" | "unreachable";
 
@@ -88,7 +91,7 @@ function afterOutcome(
   state: CalculatorState,
   outcome: Outcome,
 ): CalculatorState {
-  const sentExpression = state.expression;
+  const { sentExpression } = state;
   switch (outcome.kind) {
     case "result":
       return {
@@ -111,15 +114,15 @@ function afterOutcome(
   }
 }
 
-function sent(state: CalculatorState): CalculatorState {
+export function sendableExpression(state: CalculatorState) {
+  if (state.mode !== "typing" && state.mode !== "unreachable") return null;
   const hasOperator = OPERATORS.some(
     (operator) => state.expression.indexOf(operator, 1) !== -1,
   );
-  if (!hasOperator) return state;
-  const expression = endsWithOperatorOrPoint(state.expression)
+  if (!hasOperator) return null;
+  return endsWithOperatorOrPoint(state.expression)
     ? state.expression.slice(0, -1)
     : state.expression;
-  return { ...initialState, mode: "pending", expression };
 }
 
 export function nextState(
@@ -149,8 +152,13 @@ export function nextState(
         : typed(state, withoutLastCharacter(state.expression));
     case "clear":
       return initialState;
-    case "equals":
-      return startsFresh ? state : sent(state);
+    case "sent":
+      return {
+        ...initialState,
+        mode: "pending",
+        expression: action.expression,
+        sentExpression: action.expression,
+      };
     case "outcome":
       return state;
     default:
@@ -158,23 +166,22 @@ export function nextState(
   }
 }
 
+function mainLineOf(state: CalculatorState) {
+  if (state.mode === "pending") return "";
+  if (state.mode === "error" || state.mode === "unreachable") {
+    return state.message;
+  }
+  return toDisplay(state.expression || EMPTY_MAIN_LINE);
+}
+
 export function screenOf(state: CalculatorState) {
-  const showsMessage = state.mode === "error" || state.mode === "unreachable";
-  const expressionLine = {
-    typing: "",
-    pending: "",
-    result: state.sentExpression,
-    error: state.sentExpression,
-    unreachable: state.expression,
-  }[state.mode];
+  const expressionLine = state.mode === "typing" ? "" : state.sentExpression;
   const trailingOperator = operatorOf(state.expression.at(-1));
 
   return {
     mode: state.mode,
     expressionLine: toDisplay(expressionLine),
-    mainLine: showsMessage
-      ? state.message
-      : toDisplay(state.expression || EMPTY_MAIN_LINE),
+    mainLine: mainLineOf(state),
     selectedOperator:
       state.mode === "typing" ? (trailingOperator ?? null) : null,
   };

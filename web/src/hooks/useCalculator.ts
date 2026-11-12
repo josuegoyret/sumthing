@@ -1,23 +1,31 @@
-import { useEffect, useReducer } from "react";
+import { useReducer } from "react";
 import type { CalculatorClient } from "../calculatorClient";
-import { initialState, nextState, screenOf } from "../calculatorState";
+import {
+  type KeyAction,
+  initialState,
+  nextState,
+  screenOf,
+  sendableExpression,
+} from "../calculatorState";
 
 export function useCalculator(client: CalculatorClient) {
   const [state, dispatch] = useReducer(nextState, initialState);
-  const { mode, expression } = state;
 
-  useEffect(() => {
-    if (mode !== "pending") return;
+  async function submit() {
+    const expression = sendableExpression(state);
+    if (expression === null) return;
+    dispatch({ type: "sent", expression });
+    const outcome = await client.calculate(expression);
+    dispatch({ type: "outcome", outcome });
+  }
 
-    let isCurrent = true;
-    client.calculate(expression).then((outcome) => {
-      if (isCurrent) dispatch({ type: "outcome", outcome });
-    });
+  function press(action: KeyAction) {
+    if (action.type === "equals") {
+      submit();
+      return;
+    }
+    dispatch(action);
+  }
 
-    return () => {
-      isCurrent = false;
-    };
-  }, [client, mode, expression]);
-
-  return { screen: screenOf(state), press: dispatch };
+  return { screen: screenOf(state), press };
 }

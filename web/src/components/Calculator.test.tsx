@@ -35,7 +35,18 @@ describe("Calculator", () => {
     expect(screen.getByText("15+6+7")).toBeVisible();
   });
 
-  it("sends the Expression even when keys arrive before a render", async () => {
+  it("moves the Expression up at once and waits with an empty main line", async () => {
+    const client = { calculate: vi.fn(() => new Promise<Outcome>(() => {})) };
+    const { press } = renderCalculator(client);
+
+    await press("2", "plus", "3", "equals");
+
+    expect(screen.getByText("2+3")).toHaveClass("display-expression");
+    expect(document.querySelector(".display-main")).toBeEmptyDOMElement();
+    expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true");
+  });
+
+  it("never waits without a request when keys arrive before a render", () => {
     const client = fakeClient({ kind: "result", result: "5" });
     render(<Calculator client={client} />);
     const key = (name: string) => screen.getByRole("button", { name });
@@ -44,8 +55,9 @@ describe("Calculator", () => {
       for (const name of ["2", "plus", "3", "equals"]) key(name).click();
     });
 
-    expect(await screen.findByRole("status")).toHaveTextContent("5");
-    expect(client.calculate).toHaveBeenCalledWith("2+3");
+    const isWaiting = key("equals").getAttribute("aria-disabled") === "true";
+    const hasRequest = client.calculate.mock.calls.length > 0;
+    expect(isWaiting).toBe(hasRequest);
   });
 
   it("shows a calculation error", async () => {
