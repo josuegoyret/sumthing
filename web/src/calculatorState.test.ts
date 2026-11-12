@@ -1,0 +1,187 @@
+import { describe, expect, it } from "vitest";
+import {
+  type Action,
+  type CalculatorState,
+  initialState,
+  nextState,
+  screenOf,
+} from "./calculatorState";
+
+const KEY_ACTIONS: Record<string, Action> = {
+  ".": { type: "point" },
+  "+": { type: "operator", operator: "+" },
+  "-": { type: "operator", operator: "-" },
+  "*": { type: "operator", operator: "*" },
+  "/": { type: "operator", operator: "/" },
+  "=": { type: "equals" },
+  C: { type: "clear" },
+  "<": { type: "backspace" },
+};
+
+function actionFor(key: string): Action {
+  return KEY_ACTIONS[key] ?? { type: "digit", digit: key };
+}
+
+function press(keys: string, from: CalculatorState = initialState) {
+  return [...keys].map(actionFor).reduce(nextState, from);
+}
+
+function result(value: string): Action {
+  return { type: "outcome", outcome: { kind: "result", result: value } };
+}
+
+const divisionByZero: Action = {
+  type: "outcome",
+  outcome: {
+    kind: "calculationError",
+    code: "DIVISION_BY_ZERO",
+    message: "Can't divide by zero.",
+  },
+};
+
+const unreachable: Action = {
+  type: "outcome",
+  outcome: { kind: "unreachable" },
+};
+
+describe("typing", () => {
+  it.each([
+    ["starts at 0", "", "0"],
+    ["shows digits", "15", "15"],
+    ["groups thousands", "1234", "1,234"],
+    ["shows UI symbols", "5*3/2-1", "5×3÷2−1"],
+    ["replaces a lone 0 with a digit", "07", "7"],
+    ["replaces a lone 0 after an Operator", "5+07", "5+7"],
+    ["keeps 0 after a point", "0.05", "0.05"],
+    ["types 0. for a point with no Number", ".5", "0.5"],
+    ["types 0. for a point after an Operator", "5+.", "5+0."],
+    ["ignores a second point in one Number", "1.2.3", "1.23"],
+    ["allows a point in the next Number", "1.2+3.4", "1.2+3.4"],
+    ["starts from 0 for an Operator first", "+", "0+"],
+    ["replaces an Operator with the next one", "5+*", "5×"],
+    ["drops a trailing point before an Operator", "5.+", "5+"],
+    ["removes the last character", "123<", "12"],
+    ["shows 0 when everything is removed", "1<", "0"],
+    ["clears everything", "12+3C", "0"],
+  ])("%s", (_, keys, mainLine) => {
+    expect(screenOf(press(keys)).mainLine).toBe(mainLine);
+  });
+
+  it("selects the last Operator until the next Number", () => {
+    expect(screenOf(press("5*")).selectedOperator).toBe("*");
+    expect(screenOf(press("5*3")).selectedOperator).toBeNull();
+  });
+
+  it("ignores input past 100 characters", () => {
+    const full = press("1".repeat(100));
+    expect(press("2", full)).toBe(full);
+  });
+});
+
+describe("equals", () => {
+  it("does nothing with no Operator", () => {
+    const typed = press("15");
+    expect(press("=", typed)).toBe(typed);
+  });
+
+  it("sends the Expression and waits", () => {
+    const state = press("15+6+7=");
+    expect(state.mode).toBe("pending");
+    expect(state.expression).toBe("15+6+7");
+  });
+
+  it.each([
+    ["a trailing Operator", "5+=", "5"],
+    ["a trailing point", "5+2.=", "5+2"],
+  ])("drops %s", (_, keys, sent) => {
+    expect(press(keys).expression).toBe(sent);
+  });
+
+  it("ignores keys while pending", () => {
+    const pending = press("2+3=");
+    expect(press("4", pending)).toBe(pending);
+  });
+});
+
+describe("after a Result", () => {
+  const shown = nextState(press("15+6+7="), result("28"));
+
+  it("shows the Expression above the Result", () => {
+    expect(screenOf(shown)).toMatchObject({
+      expressionLine: "15+6+7",
+      mainLine: "28",
+      mode: "result",
+    });
+  });
+
+  it("groups a long Result", () => {
+    const big = nextState(press("22333*1="), result("22333"));
+    expect(screenOf(big).mainLine).toBe("22,333");
+  });
+
+  it("continues from the Result with an Operator", () => {
+    expect(screenOf(press("+", shown)).mainLine).toBe("28+");
+  });
+
+  it("continues from a negative Result", () => {
+    const negative = nextState(press("1-4="), result("-3"));
+    expect(screenOf(press("+", negative)).mainLine).toBe("−3+");
+  });
+
+  it.each([
+    ["a digit", "4", "4"],
+    ["a point", ".", "0."],
+  ])("starts a new Expression with %s", (_, keys, mainLine) => {
+    expect(screenOf(press(keys, shown)).mainLine).toBe(mainLine);
+  });
+
+  it.each([["<"], ["="]])("ignores %s", (keys) => {
+    expect(press(keys, shown)).toBe(shown);
+  });
+
+  it("ignores an outcome when nothing is pending", () => {
+    expect(nextState(shown, result("1"))).toBe(shown);
+  });
+});
+
+describe("after a calculation error", () => {
+  const failed = nextState(press("5/0="), divisionByZero);
+
+  it("shows the message with the Expression above", () => {
+    expect(screenOf(failed)).toMatchObject({
+      expressionLine: "5÷0",
+      mainLine: "Can't divide by zero.",
+      mode: "error",
+    });
+  });
+
+  it.each([
+    ["a digit starts fresh", "7", "7"],
+    ["an Operator starts from 0", "+", "0+"],
+  ])("%s", (_, keys, mainLine) => {
+    expect(screenOf(press(keys, failed)).mainLine).toBe(mainLine);
+  });
+});
+
+describe("when the calculator is unreachable", () => {
+  const offline = nextState(press("2+3="), unreachable);
+
+  it("says so and keeps the Expression", () => {
+    expect(screenOf(offline)).toMatchObject({
+      expressionLine: "2+3",
+      mainLine: "Can't reach the calculator.",
+      mode: "unreachable",
+    });
+  });
+
+  it("tries again on equals", () => {
+    expect(press("=", offline)).toMatchObject({
+      mode: "pending",
+      expression: "2+3",
+    });
+  });
+
+  it("keeps editing the Expression", () => {
+    expect(screenOf(press("4", offline)).mainLine).toBe("2+34");
+  });
+});
