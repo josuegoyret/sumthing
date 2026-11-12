@@ -20,11 +20,7 @@ Every piece of work follows this flow, in order:
 4. `/implement <ticket>`: build one ticket test-first (`tdd`, red → green).
 5. `/code-review <fixed-point>`: review against the spec and the coding standards, then commit.
 
-Who writes what:
-
-- **Backend (`api/`)**: Josué writes all Go code and tests. The agent gives the spec, test rows, hints and reviews, never finished Go code. During `/implement` on a backend ticket, the agent guides each red → green step and does not commit.
-- **Frontend (`web/`)**: the agent writes the code test-first, in small steps. After each step the agent stops without committing. Josué reviews the uncommitted diff, and the agent commits only after he approves it.
-- Anything else: ask first.
+Review before commit: code is written test-first, in small steps. Each step stops without a commit. Josué reviews the uncommitted diff, and the commit happens only after he approves it.
 
 ## Verification
 
