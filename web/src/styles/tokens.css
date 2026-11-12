@@ -23,6 +23,9 @@
   --text-display-l: 60px;
   --leading-display-l: 110%;
   --tracking-display-l: -0.015em;
+  --text-heading-1: 44px;
+  --leading-heading-1: 110%;
+  --tracking-heading-1: -0.01em;
   --text-heading-2: 34px;
   --leading-heading-2: 110%;
   --tracking-heading-2: -0.005em;
@@ -46,6 +49,8 @@
   --radius-full: 999px;
 
   --touch-min: 44px;
+  --card-width: 400px;
+  --card-min-height: 640px;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-fast: 120ms;

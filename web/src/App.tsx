@@ -1,6 +1,12 @@
 import "./App.css";
+import type { CalculatorClient } from "./calculatorClient";
+import Calculator from "./components/Calculator";
 
-export default function App() {
+type AppProps = {
+  client: CalculatorClient;
+};
+
+export default function App({ client }: AppProps) {
   return (
     <main className="app">
       <header className="app-header">
@@ -9,6 +15,7 @@ export default function App() {
         </svg>
         <span className="app-name">sumthing</span>
       </header>
+      <Calculator client={client} />
     </main>
   );
 }

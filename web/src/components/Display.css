@@ -1,0 +1,49 @@
+.display {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: var(--space-2);
+  padding-inline: var(--space-2);
+  text-align: right;
+}
+
+.display-expression {
+  min-height: 1lh;
+  font-size: var(--text-body-l);
+  line-height: var(--leading-body-l);
+  color: var(--fg-body);
+}
+
+.display-main {
+  max-width: 100%;
+  font-weight: var(--weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.display-main[data-size="large"] {
+  font-size: var(--text-display-l);
+  line-height: var(--leading-display-l);
+  letter-spacing: var(--tracking-display-l);
+}
+
+.display-main[data-size="medium"] {
+  font-size: var(--text-heading-1);
+  line-height: var(--leading-heading-1);
+  letter-spacing: var(--tracking-heading-1);
+}
+
+.display-main[data-size="small"] {
+  font-size: var(--text-heading-2);
+  line-height: var(--leading-heading-2);
+  letter-spacing: var(--tracking-heading-2);
+}
+
+.display[data-mode="error"] .display-main {
+  color: var(--danger);
+}
+
+.display[data-mode="unreachable"] .display-main {
+  color: var(--fg-body);
+}

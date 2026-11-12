@@ -1,6 +1,7 @@
 .app {
   display: flex;
   flex-direction: column;
+  gap: var(--space-6);
   min-height: 100dvh;
   padding: max(var(--space-4), env(safe-area-inset-top))
     max(var(--space-4), env(safe-area-inset-right))
@@ -31,4 +32,15 @@
   letter-spacing: var(--tracking-label);
   font-weight: var(--weight-medium);
   text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  .app {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .app-header {
+    width: var(--card-width);
+  }
 }
