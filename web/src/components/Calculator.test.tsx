@@ -35,14 +35,14 @@ describe("Calculator", () => {
     expect(screen.getByText("15+6+7")).toBeVisible();
   });
 
-  it("moves the Expression up at once and waits with an empty main line", async () => {
+  it("keeps the Expression on the main line until the response", async () => {
     const client = { calculate: vi.fn(() => new Promise<Outcome>(() => {})) };
     const { press } = renderCalculator(client);
 
     await press("2", "plus", "3", "equals");
 
-    expect(screen.getByText("2+3")).toHaveClass("display-expression");
-    expect(document.querySelector(".display-main")).toBeEmptyDOMElement();
+    expect(document.querySelector(".display-main")).toHaveTextContent("2+3");
+    expect(document.querySelector(".display-expression")).toBeEmptyDOMElement();
     expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true");
   });
 

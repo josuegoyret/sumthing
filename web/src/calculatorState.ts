@@ -167,7 +167,6 @@ export function nextState(
 }
 
 function mainLineOf(state: CalculatorState) {
-  if (state.mode === "pending") return "";
   if (state.mode === "error" || state.mode === "unreachable") {
     return state.message;
   }
@@ -175,7 +174,8 @@ function mainLineOf(state: CalculatorState) {
 }
 
 export function screenOf(state: CalculatorState) {
-  const expressionLine = state.mode === "typing" ? "" : state.sentExpression;
+  const hasOutcome = state.mode !== "typing" && state.mode !== "pending";
+  const expressionLine = hasOutcome ? state.sentExpression : "";
   const trailingOperator = operatorOf(state.expression.at(-1));
 
   return {

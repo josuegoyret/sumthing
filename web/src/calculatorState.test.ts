@@ -102,10 +102,10 @@ describe("equals", () => {
     expect(press(keys).expression).toBe(sent);
   });
 
-  it("shows the Expression above and an empty main line while it waits", () => {
+  it("keeps the Expression on the main line while it waits", () => {
     expect(screenOf(press("2+3="))).toMatchObject({
-      expressionLine: "2+3",
-      mainLine: "",
+      expressionLine: "",
+      mainLine: "2+3",
       mode: "pending",
     });
   });
