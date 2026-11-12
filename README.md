@@ -18,13 +18,13 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Without `VITE_API_URL`, the dev server uses an in-browser mock of the API, so you can work on the UI alone. A production build needs `VITE_API_URL`.
+The web app needs `VITE_API_URL` in development and in production. Without it, the app stops at start with a clear message.
 
 | Variable | Where | Default |
 |---|---|---|
 | `PORT` | API | `8080` |
 | `ALLOWED_ORIGIN` | API | `http://localhost:5173` |
-| `VITE_API_URL` | web | none (the dev mock) |
+| `VITE_API_URL` | web | none (required) |
 
 ## Tests
 

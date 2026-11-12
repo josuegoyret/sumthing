@@ -1,6 +1,6 @@
 # Inject the calculator client as a prop
 
-`main.tsx` chooses the calculator client (the HTTP client, or the development mock) and passes it down as a prop: `App → Calculator → useCalculator`. Only `useCalculator` uses it. We keep this dependency injection because it keeps the choice in one place, lets tests pass a fake client as a normal argument, and lets `main.tsx` load the mock with a dynamic import, so the mock is never in the production bundle.
+`main.tsx` creates the calculator client (the HTTP client for `VITE_API_URL`) and passes it down as a prop: `App → Calculator → useCalculator`. Only `useCalculator` uses it. We keep this dependency injection because it keeps the setup in one place and lets tests pass a fake client as a normal argument.
 
 ## Considered Options
 
