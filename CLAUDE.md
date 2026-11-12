@@ -23,7 +23,7 @@ Every piece of work follows this flow, in order:
 Who writes what:
 
 - **Backend (`api/`)**: Josué writes all Go code and tests. The agent gives the spec, test rows, hints and reviews, never finished Go code. During `/implement` on a backend ticket, the agent guides each red → green step and does not commit.
-- **Frontend (`web/`)**: the agent writes the code test-first, in small commits that Josué reviews.
+- **Frontend (`web/`)**: the agent writes the code test-first, in small steps. After each step the agent stops without committing. Josué reviews the uncommitted diff, and the agent commits only after he approves it.
 - Anything else: ask first.
 
 ## Verification
@@ -57,6 +57,8 @@ These rules come first. Where they disagree with the `code-review` smell baselin
 - Never change an input. No global mutable state.
 - Validate everything first, then calculate. Fail fast; no defensive code.
 - Never swallow an error. Expected failures are values, not exceptions or panics.
+- Avoid regular expressions. Use string methods and loops. If a regex is the only clear way, keep it very short and simple.
+- Keep loops linear: no nested passes over the same input, and no copies of it without a need. Create costly objects (for example `Intl` formatters) once, at module level.
 - Read env vars only in `api/cmd/server/main.go` and `web/src/config.ts`.
 - No new dependency without Josué's approval.
 - Tests follow the `tdd` skill.
