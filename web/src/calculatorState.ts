@@ -12,6 +12,8 @@ export type Action =
   | { type: "backspace" }
   | { type: "outcome"; outcome: Outcome };
 
+export type KeyAction = Exclude<Action, { type: "outcome" }>;
+
 export type Mode = "typing" | "pending" | "result" | "error" | "unreachable";
 
 export type CalculatorState = {

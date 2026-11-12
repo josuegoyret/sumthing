@@ -1,0 +1,52 @@
+[data-slot="key"] {
+  aspect-ratio: 1;
+  min-height: var(--touch-min);
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  color: var(--fg-primary);
+  font-size: var(--text-heading-3);
+  line-height: var(--leading-heading-3);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+[data-slot="key"][data-size="wide"] {
+  grid-column: span 2;
+  aspect-ratio: auto;
+}
+
+[data-slot="key"][data-variant="operator"],
+[data-slot="key"][data-variant="secondary"] {
+  background: var(--bg-tag);
+}
+
+[data-slot="key"][data-variant="operator"][aria-pressed="true"] {
+  background: var(--fg-primary);
+  color: var(--fg-on-primary);
+}
+
+[data-slot="key"][data-variant="primary"] {
+  background: var(--cta);
+  color: var(--fg-on-primary);
+}
+
+[data-slot="key"]:active {
+  transform: scale(0.96);
+}
+
+[data-slot="key"]:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+[data-slot="key"]:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
