@@ -1,7 +1,6 @@
 # Spec: the Go calculator service
 
-Status: open
-Owner: Josué (implements). The agent guides, gives test rows and reviews.
+Status: done
 Phase: 1, requirements only.
 
 ## Problem Statement
@@ -162,6 +161,25 @@ Start the service with `go run ./cmd/server`. Then call it with `curl`: one succ
 
 - Warm up first: solve LeetCode 227 (Basic Calculator II) in Go with `int`, then move the same loop to `*big.Rat` on Tokens.
 - Build order: `calc` (driven by `Calculate` rows), then the `httpapi` handlers, CORS and the error mapping, then `cmd/server`.
-- The agent gives hints, test rows and reviews, never finished Go code.
 
 ## Comments
+
+### 2026-11-12: end-to-end check
+
+`go test -cover ./...`: `calc` 97.4%, `httpapi` 97.2%. `gofmt` and `go vet` are clean.
+
+```
+GET  /healthz                              200 {"status":"ok"}
+POST {"expression":"5+16+4*5/15"}          200 {"expression":"5+16+4*5/15","result":"22.3333333333"}
+POST {"expression":"12345678*987654321"}   200 {"expression":"12345678*987654321","result":"12193262222374638"}
+POST {"expression":"0.1+0.2"}              200 {"expression":"0.1+0.2","result":"0.3"}
+POST {"expression":"5/0"}                  422 {"error":{"code":"DIVISION_BY_ZERO","message":"Can't divide by zero."}}
+POST {"expression":"5++3"}                 400 {"error":{"code":"INVALID_EXPRESSION","message":"The expression is not valid."}}
+POST nope                                  400 {"error":{"code":"INVALID_REQUEST","message":"Send JSON with an expression."}}
+POST {}                                    400 {"error":{"code":"INVALID_REQUEST","message":"Send JSON with an expression."}}
+POST 101 characters                        400 {"error":{"code":"EXPRESSION_TOO_LONG","message":"The expression is longer than 100 characters."}}
+OPTIONS /v1/calculate                      204 Allow-Origin, Allow-Methods: POST, Allow-Headers: Content-Type
+GET  /v1/calculate                         405 Allow: POST
+```
+
+Every response has `Access-Control-Allow-Origin`. The web app against this API: `12,345,678×987,654,321+5` = `12,193,262,222,374,643` (exact; the float mock gave `…600`), `0.1+0.2` = `0.3`, `5÷0` shows the message, and a stopped API shows "Can't reach the calculator."
