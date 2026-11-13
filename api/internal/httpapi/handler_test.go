@@ -37,6 +37,8 @@ func TestCalculateReturnsAnError(t *testing.T) {
 		code   string
 	}{
 		{"when the body is not JSON", `nope`, http.StatusBadRequest, "INVALID_REQUEST"},
+		{"when the JSON has trailing data", `{"expression":"1+1"} nope`, http.StatusBadRequest, "INVALID_REQUEST"},
+		{"when the body has a second JSON value", `{"expression":"1+1"}{"expression":"2"}`, http.StatusBadRequest, "INVALID_REQUEST"},
 		{"when the expression is missing", `{}`, http.StatusBadRequest, "INVALID_REQUEST"},
 		{"when the expression is empty", `{"expression":""}`, http.StatusBadRequest, "INVALID_REQUEST"},
 		{"when the expression is too long", `{"expression":"` + strings.Repeat("1", 101) + `"}`, http.StatusBadRequest, "EXPRESSION_TOO_LONG"},

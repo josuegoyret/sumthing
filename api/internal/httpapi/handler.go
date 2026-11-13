@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 
@@ -54,8 +55,10 @@ func NewHandler(allowedOrigin string, dictator *dictation.Dictator) http.Handler
 
 func calculateHandler(w http.ResponseWriter, r *http.Request) {
 	var request calculateRequest
-	err := json.NewDecoder(r.Body).Decode(&request)
-	if err != nil || request.Expression == "" {
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&request)
+	hasTrailingData := !errors.Is(decoder.Decode(&struct{}{}), io.EOF)
+	if err != nil || hasTrailingData || request.Expression == "" {
 		writeError(w, errInvalidRequest)
 		return
 	}
