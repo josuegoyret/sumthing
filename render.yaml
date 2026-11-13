@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: sumthing-api
+    runtime: docker
+    rootDir: api
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: ALLOWED_ORIGIN
+        sync: false
