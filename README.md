@@ -1,23 +1,21 @@
-# [sumthing](https://sumthing.vercel.app)
+# [sumthing](https://sumthing-ai.vercel.app) - **Your everyday AI calculator**
 
-**Your everyday calculator.** Exact to the last digit, because a Go service does the math with fractions, not floats.
+
 
 ![sumthing in use: 0.1 + 0.2 = 0.3, a Percent, and a long Result](docs/demo.gif)
 
 ## Try it in one minute
 
-Open **<https://sumthing.vercel.app>** and tap:
+Open **<https://sumthing-ai.vercel.app>** and tap:
 
-| Type | You get | Why it matters |
+| Type | You get | Note |
 |---|---|---|
-| `0.1 + 0.2 =` | `0.3` | JavaScript says `0.30000000000000004`. The server uses exact fractions. |
-| `5 + 16 + 4 × 5 ÷ 15 =` | `22.3333333333` | `×` and `÷` come first, as on your phone. |
-| `f(x)`, then `50 + 10 % =` | `55` | A Percent after `+` is a percent of the left side, like a tip. |
+| `0.1 + 0.2 =` | `0.3` | Exact fractions. |
+| `5 + 16 + 4 × 5 ÷ 15 =` | `22.3333333333` | `×` and `÷` come first (precedence) |
+| `f(x)`, then `50 + 10 % =` | `55` | Tip: a Percent after `+` is a percent of the left side. |
 | `1.05 ^ 12 =` | `1.795856326` | 12 months at 5%. |
-| `85 ^ 8 =`, then swipe the Result | `2,724,905,250,390,625` | Long Results scroll, and nothing is cut. |
-| `5 ÷ 0 =` | "Can't divide by zero." | Errors are clear sentences, never `NaN` or `Infinity`. |
-
-The API runs on a free plan. If it was asleep, the first `=` can take up to a minute.
+| `85 ^ 8 =`, then swipe the Result | `2,724,905,250,390,625` | Long Results scroll. |
+| `5 ÷ 0 =` | "Can't divide by zero." | Clear sentences. |
 
 ## How it works
 
