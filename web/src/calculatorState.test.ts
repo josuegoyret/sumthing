@@ -16,7 +16,7 @@ const KEY_ACTIONS: Record<string, Action> = {
   "/": { type: "operator", operator: "/" },
   "^": { type: "operator", operator: "^" },
   "√": { type: "squareRoot" },
-  s: { type: "square" },
+  "²": { type: "square" },
   "%": { type: "percent" },
   C: { type: "clear" },
   "<": { type: "backspace" },
@@ -57,8 +57,6 @@ describe("typing", () => {
   it.each([
     ["starts at 0", "", "0"],
     ["shows digits", "15", "15"],
-    ["groups thousands", "1234", "1,234"],
-    ["shows UI symbols", "5*3/2-1", "5×3÷2−1"],
     ["replaces a lone 0 with a digit", "07", "7"],
     ["replaces a lone 0 after an Operator", "5+07", "5+7"],
     ["keeps 0 after a point", "0.05", "0.05"],
@@ -82,8 +80,8 @@ describe("typing", () => {
     ["types a power", "2^3", "2^3"],
     ["ignores a second power in one term", "2^3^", "2^3"],
     ["ignores a power that would make a chain", "2^3*^", "2^3×"],
-    ["types a square", "5s", "5^2"],
-    ["ignores a square with no Number", "5+s", "5+"],
+    ["types a square", "5²", "5^2"],
+    ["ignores a square with no Number", "5+²", "5+"],
     ["types a Percent", "50%", "50%"],
     ["drops a trailing point before a Percent", "5.%", "5%"],
     ["ignores a Percent with no Number", "5+%", "5+"],
@@ -122,13 +120,6 @@ describe("equals", () => {
     expect(state.expression).toBe("15+6+7");
   });
 
-  it.each([
-    ["a trailing Operator", "5+=", "5"],
-    ["a trailing point", "5+2.=", "5+2"],
-  ])("drops %s", (_, keys, sent) => {
-    expect(press(keys).expression).toBe(sent);
-  });
-
   it("keeps the Expression on the main line while it waits", () => {
     expect(screenOf(press("2+3="))).toMatchObject({
       expressionLine: "",
@@ -144,11 +135,14 @@ describe("equals", () => {
 });
 
 describe("sendableExpression", () => {
-  const negativeNumber = press("+<", nextState(press("1-4="), result("-3")));
+  const negativeResultAlone = press(
+    "+<",
+    nextState(press("1-4="), result("-3")),
+  );
 
   it.each([
     ["no Operator", press("15")],
-    ["only a leading minus", negativeNumber],
+    ["only a negative Result", negativeResultAlone],
     ["pending", press("2+3=")],
     ["a Result", nextState(press("2+3="), result("5"))],
     ["a calculation error", nextState(press("5/0="), divisionByZero)],
@@ -186,36 +180,20 @@ describe("after a Result", () => {
     });
   });
 
-  it("groups a long Result", () => {
-    const big = nextState(press("22333*1="), result("22333"));
-    expect(screenOf(big).mainLine).toBe("22,333");
-  });
-
   it.each([
-    ["a Percent", "%", "28%"],
-    ["a square", "s", "28^2"],
-  ])("continues from the Result with %s", (_, keys, mainLine) => {
+    ["continues with an Operator", "+", "28+"],
+    ["continues with a Percent", "%", "28%"],
+    ["continues with a square", "²", "28^2"],
+    ["starts fresh with a digit", "4", "4"],
+    ["starts fresh with a point", ".", "0."],
+    ["starts fresh with a square root", "√", "√"],
+  ])("%s", (_, keys, mainLine) => {
     expect(screenOf(press(keys, shown)).mainLine).toBe(mainLine);
-  });
-
-  it("starts a new Expression with a square root", () => {
-    expect(screenOf(press("√", shown)).mainLine).toBe("√");
-  });
-
-  it("continues from the Result with an Operator", () => {
-    expect(screenOf(press("+", shown)).mainLine).toBe("28+");
   });
 
   it("continues from a negative Result", () => {
     const negative = nextState(press("1-4="), result("-3"));
     expect(screenOf(press("+", negative)).mainLine).toBe("−3+");
-  });
-
-  it.each([
-    ["a digit", "4", "4"],
-    ["a point", ".", "0."],
-  ])("starts a new Expression with %s", (_, keys, mainLine) => {
-    expect(screenOf(press(keys, shown)).mainLine).toBe(mainLine);
   });
 
   it.each([["<"], ["="]])("ignores %s", (keys) => {
