@@ -9,3 +9,5 @@ services:
     envVars:
       - key: ALLOWED_ORIGIN
         sync: false
+      - key: OPENAI_API_KEY
+        sync: false

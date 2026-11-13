@@ -31,3 +31,11 @@ _Avoid_: root, radical, sqrt
 **Percent**:
 `%` written after a Number. After `+` or `−`, it means that percent of everything on the left: `50+10%` is `55`. Anywhere else, it divides the Number by 100: `50×10%` is `5`.
 _Avoid_: percentage, pct
+
+**Dictation**:
+Entering an Expression by voice. The user speaks, an AI turns the words into an Expression, and the server calculates it like any typed Expression.
+_Avoid_: voice input, speech, voice command
+
+**Transcript**:
+The exact words that the user said during a Dictation, as text.
+_Avoid_: caption, speech text

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/josuegoyret/sumthing/api/internal/dictation"
 	"github.com/josuegoyret/sumthing/api/internal/httpapi"
 )
 
@@ -24,6 +25,11 @@ func main() {
 	port := envOr("PORT", defaultPort)
 	allowedOrigin := envOr("ALLOWED_ORIGIN", defaultAllowedOrigin)
 
-	log.Printf("listening on :%s, allowing %s", port, allowedOrigin)
-	log.Fatal(http.ListenAndServe(":"+port, httpapi.NewHandler(allowedOrigin)))
+	var dictator *dictation.Dictator
+	if apiKey := os.Getenv("OPENAI_API_KEY"); apiKey != "" {
+		dictator = dictation.New(apiKey)
+	}
+
+	log.Printf("listening on :%s, allowing %s, dictation %t", port, allowedOrigin, dictator != nil)
+	log.Fatal(http.ListenAndServe(":"+port, httpapi.NewHandler(allowedOrigin, dictator)))
 }

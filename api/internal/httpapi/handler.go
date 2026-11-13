@@ -9,9 +9,14 @@ import (
 	"net/http"
 
 	"github.com/josuegoyret/sumthing/api/internal/calc"
+	"github.com/josuegoyret/sumthing/api/internal/dictation"
 )
 
-var errInvalidRequest = errors.New("invalid request")
+var (
+	errInvalidRequest       = errors.New("invalid request")
+	errInvalidAudio         = errors.New("invalid audio")
+	errDictationUnavailable = errors.New("dictation unavailable")
+)
 
 type calculateRequest struct {
 	Expression string `json:"expression"`
@@ -38,9 +43,11 @@ type apiError struct {
 }
 
 // NewHandler returns the calculator API, with CORS for allowedOrigin.
-func NewHandler(allowedOrigin string) http.Handler {
+// A nil dictator turns dictation off.
+func NewHandler(allowedOrigin string, dictator *dictation.Dictator) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /v1/calculate", calculateHandler)
+	mux.HandleFunc("POST /v1/dictate", dictateHandler(dictator))
 	mux.HandleFunc("GET /healthz", healthHandler)
 	return withCORS(allowedOrigin, mux)
 }
@@ -69,6 +76,16 @@ func errorFor(err error) apiError {
 	switch {
 	case errors.Is(err, errInvalidRequest):
 		return apiError{http.StatusBadRequest, "INVALID_REQUEST", "Send JSON with an expression."}
+	case errors.Is(err, errInvalidAudio):
+		message := fmt.Sprintf("Send an audio recording of at most %d MB.", maxAudioBytes>>20)
+		return apiError{http.StatusBadRequest, "INVALID_REQUEST", message}
+	case errors.Is(err, errDictationUnavailable):
+		return apiError{http.StatusServiceUnavailable, "DICTATION_UNAVAILABLE", "Dictation isn't available."}
+	case errors.Is(err, dictation.ErrNotUnderstood):
+		return apiError{http.StatusUnprocessableEntity, "NOT_UNDERSTOOD", "Couldn't understand that. Try again."}
+	case errors.Is(err, dictation.ErrFailed):
+		log.Printf("dictation: %v", err)
+		return apiError{http.StatusBadGateway, "DICTATION_FAILED", "Dictation failed. Try again."}
 	case errors.Is(err, calc.ErrExpressionTooLong):
 		message := fmt.Sprintf("The expression is longer than %d characters.", calc.MaxExpressionLength)
 		return apiError{http.StatusBadRequest, "EXPRESSION_TOO_LONG", message}

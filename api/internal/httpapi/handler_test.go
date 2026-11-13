@@ -17,7 +17,7 @@ const testOrigin = "http://localhost:5173"
 func send(method, path, body string) *httptest.ResponseRecorder {
 	recorder := httptest.NewRecorder()
 	request := httptest.NewRequest(method, path, strings.NewReader(body))
-	httpapi.NewHandler(testOrigin).ServeHTTP(recorder, request)
+	httpapi.NewHandler(testOrigin, nil).ServeHTTP(recorder, request)
 	return recorder
 }
 
