@@ -64,6 +64,8 @@ cd web && bun install && cp .env.example .env.local && bun run dev
 ## Tests
 
 ```sh
-cd api && go test -cover ./...   # calc 98.4%, httpapi 97.4%
-cd web && bun run coverage       # 116 tests, 94.5% of statements
+cd api && go test -cover ./...   # 69 cases: calc 98.4%, httpapi 53.3%
+cd web && bun run coverage       # 96 tests, 63.6% of statements
 ```
+
+The tests focus on the core calculator. Dictation, keyboard input and key sounds are not unit-tested, by decision. See the [coverage report](docs/coverage.md).
