@@ -17,4 +17,9 @@ Ideas that are agreed but not yet specified. Each one gets its own spec before w
 
 - A very subtle, smooth mechanical-keyboard click on each key press.
 - A short, satisfying ping when the Result arrives.
-- Open points: a mute control and its default, the sound source (generated in the browser with the Web Audio API, or small audio files), and the volume.
+- Plan: play the sounds with Howler (cross-browser audio; a new dependency, proposed by Josué).
+- Open points: a mute control and its default, the sound files, and the volume.
+
+## README highlight
+
+- When dictation and key sounds are done, give them a short section in the README: they are the parts that teach the reader something (audio in the browser, speech to an Expression with an LLM).
