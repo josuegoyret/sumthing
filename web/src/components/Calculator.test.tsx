@@ -20,7 +20,7 @@ function renderCalculator(client: CalculatorClient) {
       await user.click(screen.getByRole("button", { name }));
     }
   }
-  return { press };
+  return { press, user };
 }
 
 describe("Calculator", () => {
@@ -166,5 +166,68 @@ describe("Calculator", () => {
     renderCalculator(fakeClient());
 
     expect(screen.getByRole("button", { name })).toBeInTheDocument();
+  });
+
+  describe("with the keyboard", () => {
+    it("types the Expression and sends it with Enter", async () => {
+      const client = fakeClient({ kind: "result", result: "4" });
+      const { user } = renderCalculator(client);
+
+      await user.keyboard("1,5+3xr4^{Backspace}{Enter}");
+
+      expect(client.calculate).toHaveBeenCalledWith("1.5+3*√4");
+      expect(await screen.findByRole("status")).toHaveTextContent("4");
+    });
+
+    it("clears with Escape", async () => {
+      const { user } = renderCalculator(fakeClient());
+
+      await user.keyboard("12{Escape}");
+
+      expect(document.querySelector(".display-main")?.textContent).toBe("0");
+    });
+
+    it("presses equals only once when a Key has focus", async () => {
+      const client = fakeClient({ kind: "result", result: "5" });
+      const { press, user } = renderCalculator(client);
+
+      await press("2", "plus", "3");
+      await user.keyboard("{Enter}");
+
+      expect(client.calculate).toHaveBeenCalledTimes(1);
+      expect(client.calculate).toHaveBeenCalledWith("2+3");
+    });
+
+    it("ignores keys with Control, so browser shortcuts still work", async () => {
+      const { user } = renderCalculator(fakeClient());
+
+      await user.keyboard("{Control>}r{/Control}");
+
+      expect(document.querySelector(".display-main")?.textContent).toBe("0");
+    });
+
+    it("shows the Key as pressed while the physical key is held", async () => {
+      const { user } = renderCalculator(fakeClient());
+      const seven = screen.getByRole("button", { name: "7" });
+
+      await user.keyboard("{7>}");
+      expect(seven).toHaveAttribute("data-held", "true");
+
+      await user.keyboard("{/7}");
+      expect(seven).not.toHaveAttribute("data-held");
+    });
+
+    it("announces the shortcuts of each Key", () => {
+      renderCalculator(fakeClient());
+
+      expect(screen.getByRole("button", { name: "equals" })).toHaveAttribute(
+        "aria-keyshortcuts",
+        "Enter =",
+      );
+      expect(screen.getByRole("button", { name: "plus" })).toHaveAttribute(
+        "aria-keyshortcuts",
+        "Plus",
+      );
+    });
   });
 });

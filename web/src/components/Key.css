@@ -51,7 +51,8 @@
   }
 }
 
-[data-slot="key"]:active:not([aria-disabled="true"]) {
+[data-slot="key"]:active:not([aria-disabled="true"]),
+[data-slot="key"][data-held]:not([aria-disabled="true"]) {
   transform: scale(0.96);
 }
 
@@ -67,7 +68,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-slot="key"]:active:not([aria-disabled="true"]) {
+  [data-slot="key"]:active:not([aria-disabled="true"]),
+  [data-slot="key"][data-held]:not([aria-disabled="true"]) {
     transform: none;
   }
 }

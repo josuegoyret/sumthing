@@ -1,5 +1,7 @@
 import { type ComponentProps, useId, useState } from "react";
 import type { KeyAction, Operator } from "../calculatorState";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { keyActionId, shortcutsFor } from "../keyboardShortcuts";
 import Key from "./Key";
 import "./Keypad.css";
 
@@ -98,6 +100,7 @@ export default function Keypad({
 }: KeypadProps) {
   const [areFunctionsOpen, setAreFunctionsOpen] = useState(false);
   const functionsId = useId();
+  const heldKeyId = useKeyboardShortcuts(onPress);
 
   function keyFor({ label, action, name, variant, size }: KeyDefinition) {
     return (
@@ -106,6 +109,8 @@ export default function Keypad({
         variant={variant}
         size={size}
         aria-label={name}
+        aria-keyshortcuts={shortcutsFor(action)}
+        data-held={keyActionId(action) === heldKeyId ? true : undefined}
         aria-pressed={
           action.type === "operator"
             ? action.operator === selectedOperator
