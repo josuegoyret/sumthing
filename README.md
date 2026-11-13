@@ -1,8 +1,6 @@
-# [sumthing](https://sumthing-ai.vercel.app) - **Your everyday AI calculator**
+# [sumthing.ai](https://sumthing-ai.vercel.app) - **Your everyday AI calculator**
 
-
-
-![sumthing in use: 0.1 + 0.2 = 0.3, a Percent, and a long Result](docs/demo.gif)
+![sumthing.ai in use: 0.1 + 0.2 = 0.3, a Percent, and a long Result](docs/demo.gif)
 
 ## Try it in one minute
 
