@@ -23,3 +23,10 @@ Ideas that are agreed but not yet specified. Each one gets its own spec before w
 ## README highlight
 
 - When dictation and key sounds are done, give them a short section in the README: they are the parts that teach the reader something (audio in the browser, speech to an Expression with an LLM).
+
+## Submission readiness
+
+- **Add development prompts:** share the actual prompts used to develop the submission in a document linked from the README or in the submission itself.
+- **Complete coverage deliverable:** capture coverage reports for both layers from the final test suite, include package/file breakdowns and reproducible commands, update the README's test counts and coverage figures, and cover Dictation and HTTP error-handling paths.
+- **Improve JSON validation:** require EOF after the calculation request's JSON object and add regression tests for trailing garbage and additional JSON values.
+- **Polish README:** provide or replace the referenced `docs/demo.gif`, document Dictation setup and `OPENAI_API_KEY`, and explain behavior when credentials are not configured.
