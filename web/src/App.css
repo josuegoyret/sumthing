@@ -45,6 +45,6 @@
   }
 
   .app-header {
-    align-self: flex-start;
+    align-self: stretch;
   }
 }

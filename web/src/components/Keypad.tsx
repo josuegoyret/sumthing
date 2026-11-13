@@ -1,3 +1,4 @@
+import { CalculatorIcon } from "lucide-react";
 import { type ComponentProps, useId, useState } from "react";
 import type { KeyAction, Operator } from "../calculatorState";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
@@ -142,7 +143,7 @@ export default function Keypad({
           aria-controls={functionsId}
           onClick={() => setAreFunctionsOpen(!areFunctionsOpen)}
         >
-          f(x)
+          <CalculatorIcon />
         </Key>
         {KEYS.map(keyFor)}
       </div>

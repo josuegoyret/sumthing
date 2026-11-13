@@ -1,6 +1,7 @@
 import "./App.css";
 import type { CalculatorClient } from "./calculatorClient";
 import Calculator from "./components/Calculator";
+import MuteToggle from "./components/MuteToggle";
 
 type AppProps = {
   client: CalculatorClient;
@@ -15,6 +16,7 @@ export default function App({ client }: AppProps) {
           <path className="app-logo-sigma" d="M22 9H10l7 7-7 7h12" />
         </svg>
         <h1 className="app-name">sumthing</h1>
+        <MuteToggle />
       </header>
       <Calculator client={client} />
     </main>

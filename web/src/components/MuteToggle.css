@@ -1,0 +1,35 @@
+[data-slot="toggle"].mute-toggle {
+  display: grid;
+  place-items: center;
+  margin-inline-start: auto;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--fg-primary);
+  font-size: var(--text-heading-3);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--dur-press) ease;
+}
+
+.mute-toggle svg {
+  width: 1em;
+  height: 1em;
+}
+
+.mute-toggle[aria-pressed="true"] {
+  color: var(--fg-body);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mute-toggle:hover {
+    background: var(--bg-tag);
+  }
+}
+
+.mute-toggle:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}

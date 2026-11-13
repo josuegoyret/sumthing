@@ -1,8 +1,14 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CalculatorClient, Outcome } from "../calculatorClient";
+import { playClick, playPing } from "../keySounds";
 import Calculator from "./Calculator";
+
+vi.mock("../keySounds", () => ({
+  playClick: vi.fn(),
+  playPing: vi.fn(),
+}));
 
 function fakeClient(...outcomes: Outcome[]) {
   const calculate = vi.fn<CalculatorClient["calculate"]>();
@@ -24,6 +30,10 @@ function renderCalculator(client: CalculatorClient) {
 }
 
 describe("Calculator", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("sends the Expression and shows the Result under it", async () => {
     const client = fakeClient({ kind: "result", result: "28" });
     const { press } = renderCalculator(client);
@@ -228,6 +238,53 @@ describe("Calculator", () => {
         "aria-keyshortcuts",
         "Plus",
       );
+    });
+  });
+
+  describe("with sounds", () => {
+    it("clicks on every Key press, from the mouse and the keyboard", async () => {
+      const { press, user } = renderCalculator(fakeClient());
+
+      await press("2");
+      await user.keyboard("3");
+
+      expect(playClick).toHaveBeenCalledTimes(2);
+    });
+
+    it("makes no click with the f(x) toggle", async () => {
+      const { press } = renderCalculator(fakeClient());
+
+      await press("More functions");
+
+      expect(playClick).not.toHaveBeenCalled();
+    });
+
+    it("pings when a Result arrives", async () => {
+      const { press } = renderCalculator(
+        fakeClient({ kind: "result", result: "5" }),
+      );
+
+      await press("2", "plus", "3", "equals");
+
+      expect(await screen.findByRole("status")).toHaveTextContent("5");
+      expect(playPing).toHaveBeenCalledTimes(1);
+    });
+
+    it("stays silent on an error", async () => {
+      const { press } = renderCalculator(
+        fakeClient({
+          kind: "calculationError",
+          code: "DIVISION_BY_ZERO",
+          message: "Can't divide by zero.",
+        }),
+      );
+
+      await press("5", "divide", "0", "equals");
+
+      expect(await screen.findByRole("status")).toHaveTextContent(
+        "Can't divide by zero.",
+      );
+      expect(playPing).not.toHaveBeenCalled();
     });
   });
 });

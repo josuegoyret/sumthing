@@ -7,6 +7,7 @@ import {
   screenOf,
   sendableExpression,
 } from "../calculatorState";
+import { playClick, playPing } from "../keySounds";
 
 export function useCalculator(client: CalculatorClient) {
   const [state, dispatch] = useReducer(nextState, initialState);
@@ -17,6 +18,7 @@ export function useCalculator(client: CalculatorClient) {
     dispatch({ type: "sent", expression });
     const outcome = await client.calculate(expression);
     dispatch({ type: "outcome", outcome });
+    if (outcome.kind === "result") playPing();
   }
 
   function press(action: KeyAction) {
@@ -24,6 +26,7 @@ export function useCalculator(client: CalculatorClient) {
       submit();
       return;
     }
+    playClick();
     dispatch(action);
   }
 

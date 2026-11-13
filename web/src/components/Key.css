@@ -19,6 +19,12 @@
     opacity var(--dur-press) ease;
 }
 
+[data-slot="key"] svg {
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+}
+
 [data-slot="key"][data-size="wide"] {
   grid-column: span 2;
   aspect-ratio: auto;
