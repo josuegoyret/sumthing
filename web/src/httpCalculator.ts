@@ -1,7 +1,9 @@
 import type { CalculatorClient, Dictation } from "./calculatorClient";
 
-const CALCULATE_TIMEOUT_MS = 5000;
-const DICTATE_TIMEOUT_MS = 30000;
+// The API sleeps when it has no traffic, and a cold start can take about a
+// minute. Both timeouts wait for it to wake up instead of failing early.
+const CALCULATE_TIMEOUT_MS = 90000;
+const DICTATE_TIMEOUT_MS = 90000;
 const AUDIO_FILE_NAME = "dictation";
 
 type ErrorBody = { error: { code: string; message: string } };
@@ -26,6 +28,10 @@ async function postWithTimeout(
   } finally {
     clearTimeout(timeout);
   }
+}
+
+export function warmUp(apiUrl: string) {
+  fetch(`${apiUrl}/healthz`).catch(() => {});
 }
 
 export function createHttpCalculator(apiUrl: string): CalculatorClient {

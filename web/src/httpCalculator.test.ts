@@ -74,7 +74,7 @@ describe("createHttpCalculator", () => {
     expect(await calculate("2+3")).toEqual({ kind: "unreachable" });
   });
 
-  it("returns unreachable after 5 seconds with no response", async () => {
+  it("returns unreachable after 90 seconds with no response", async () => {
     vi.useFakeTimers();
     vi.stubGlobal(
       "fetch",
@@ -89,7 +89,7 @@ describe("createHttpCalculator", () => {
     );
 
     const outcome = calculate("2+3");
-    await vi.advanceTimersByTimeAsync(5000);
+    await vi.advanceTimersByTimeAsync(90000);
 
     expect(await outcome).toEqual({ kind: "unreachable" });
   });
