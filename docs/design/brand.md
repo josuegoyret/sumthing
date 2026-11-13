@@ -12,7 +12,7 @@ The checklist for every design screenshot. If the screen breaks a rule here, it 
 |---|---|---|---|
 | Primary Plum Dark | `#201733` | Dark backgrounds | The canvas |
 | Primary Plum Light | `#F2E6FF` | Font and icons on dark | Digits, the Result |
-| Bold Green | `#9FF4D9` | **CTAs on dark**, success | The `=` key only |
+| Bold Green | `#9FF4D9` | **CTAs on dark**, success | The `=` and mic keys (same importance), and the listening dot |
 | Bold Plum | `#8333D4` | CTAs on light, brand expression | The logo tile only |
 | Plum 200 | `#C9A1F4` | Bold Plum tint (token CSS) | Operator keys |
 | Bold Pink | `#FF5667` | Promos and pricing. Token CSS: errors | Error messages |
@@ -54,7 +54,7 @@ Long numbers on the main line shrink to fit, and never go below heading-2 (34px)
 |---|---|---|
 | `default` | Digits and `.` | `--bg-card` fill, Plum Light text |
 | `operator` | `+ − × ÷` | 1px Plum 200 border, Plum 200 text. Selected: Plum 200 fill, Plum Dark text |
-| `primary` | `=` | Bold Green fill, Plum Dark text |
+| `primary` | `=` and mic | Bold Green fill, Plum Dark text |
 | `ghost` | `C` and backspace | No fill, `--fg-secondary` text |
 
 Never swap the fill colours. Never put Bold Green on a light background.

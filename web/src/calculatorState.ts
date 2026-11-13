@@ -13,7 +13,9 @@ type EditAction =
   | { type: "clear" }
   | { type: "backspace" };
 
-export type KeyAction = EditAction | { type: "equals" };
+export type CalculatorKeyAction = EditAction | { type: "equals" };
+
+export type KeyAction = CalculatorKeyAction | { type: "dictate" };
 
 export type Action =
   | EditAction
@@ -215,6 +217,10 @@ export function nextState(
     default:
       return action satisfies never;
   }
+}
+
+export function dictationScreenOf(state: CalculatorState) {
+  return state.mode === "error" ? "" : state.expression;
 }
 
 function mainLineOf(state: CalculatorState) {

@@ -39,9 +39,42 @@
   font-weight: var(--weight-medium);
 }
 
+.app-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.app-hint {
+  display: none;
+  color: var(--fg-body);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  text-align: center;
+}
+
+.app-hint kbd {
+  color: var(--fg-primary);
+  font-family: inherit;
+  font-weight: var(--weight-medium);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .app-hint {
+    display: block;
+  }
+}
+
 @media (min-width: 640px) {
   .app {
     align-items: center;
+  }
+
+  .app-content {
+    flex: none;
+    margin-block: auto;
   }
 
   .app-header {

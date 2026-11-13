@@ -1,33 +1,75 @@
-import type { CalculatorClient } from "./calculatorClient";
+import type { CalculatorClient, Dictation } from "./calculatorClient";
 
-const TIMEOUT_MS = 5000;
+const CALCULATE_TIMEOUT_MS = 5000;
+const DICTATE_TIMEOUT_MS = 30000;
+const AUDIO_FILE_NAME = "dictation";
 
-type CalculateResponse =
-  { result: string } | { error: { code: string; message: string } };
+type ErrorBody = { error: { code: string; message: string } };
+type CalculateResponse = { result: string } | ErrorBody;
+type DictateResponse = Dictation | ErrorBody;
+
+function fileExtensionOf(mimeType: string) {
+  const subtype = mimeType.split("/")[1] ?? "";
+  return subtype.split(";")[0];
+}
+
+async function postWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...init, signal: controller.signal });
+    return await response.json();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 export function createHttpCalculator(apiUrl: string): CalculatorClient {
   return {
     async calculate(expression) {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
       try {
-        const response = await fetch(`${apiUrl}/v1/calculate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ expression }),
-          signal: controller.signal,
-        });
-        const body: CalculateResponse = await response.json();
-
+        const body: CalculateResponse = await postWithTimeout(
+          `${apiUrl}/v1/calculate`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ expression }),
+          },
+          CALCULATE_TIMEOUT_MS,
+        );
         if ("error" in body) {
           return { kind: "calculationError", ...body.error };
         }
         return { kind: "result", result: body.result };
       } catch {
         return { kind: "unreachable" };
-      } finally {
-        clearTimeout(timeout);
+      }
+    },
+
+    async dictate(audio, screen) {
+      const form = new FormData();
+      form.append(
+        "audio",
+        audio,
+        `${AUDIO_FILE_NAME}.${fileExtensionOf(audio.type)}`,
+      );
+      form.append("expression", screen);
+      try {
+        const body: DictateResponse = await postWithTimeout(
+          `${apiUrl}/v1/dictate`,
+          { method: "POST", body: form },
+          DICTATE_TIMEOUT_MS,
+        );
+        if ("error" in body) {
+          return { kind: "calculationError", ...body.error };
+        }
+        return { kind: "result", ...body };
+      } catch {
+        return { kind: "unreachable" };
       }
     },
   };

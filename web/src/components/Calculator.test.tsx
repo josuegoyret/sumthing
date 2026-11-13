@@ -11,11 +11,12 @@ vi.mock("../keySounds", () => ({
 }));
 
 function fakeClient(...outcomes: Outcome[]) {
+  const dictate = vi.fn<CalculatorClient["dictate"]>();
   const calculate = vi.fn<CalculatorClient["calculate"]>();
   for (const outcome of outcomes) {
     calculate.mockResolvedValueOnce(outcome);
   }
-  return { calculate };
+  return { calculate, dictate };
 }
 
 function renderCalculator(client: CalculatorClient) {
@@ -46,7 +47,10 @@ describe("Calculator", () => {
   });
 
   it("keeps the Expression on the main line until the response", async () => {
-    const client = { calculate: vi.fn(() => new Promise<Outcome>(() => {})) };
+    const client = {
+      calculate: vi.fn(() => new Promise<Outcome>(() => {})),
+      dictate: vi.fn(),
+    };
     const { press } = renderCalculator(client);
 
     await press("2", "plus", "3", "equals");
@@ -103,7 +107,10 @@ describe("Calculator", () => {
   });
 
   it("marks equals as disabled, and keeps it focusable, while it waits", async () => {
-    const client = { calculate: vi.fn(() => new Promise<Outcome>(() => {})) };
+    const client = {
+      calculate: vi.fn(() => new Promise<Outcome>(() => {})),
+      dictate: vi.fn(),
+    };
     const { press } = renderCalculator(client);
 
     await press("2", "plus", "3", "equals");

@@ -1,0 +1,121 @@
+.dictation-banner {
+  --banner-shift: -25%;
+  position: fixed;
+  inset-block-start: max(var(--space-2), env(safe-area-inset-top));
+  inset-inline: var(--space-4);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--bg-canvas);
+  color: var(--fg-primary);
+  transform-origin: top center;
+  transition:
+    opacity var(--dur-reveal) var(--ease-out),
+    transform var(--dur-reveal) var(--ease-out),
+    display var(--dur-reveal) allow-discrete;
+}
+
+.dictation-banner[hidden] {
+  display: none;
+  opacity: 0;
+  transform: translateY(var(--banner-shift)) scale(0.97);
+  transition-duration: var(--dur-press);
+}
+
+@starting-style {
+  .dictation-banner:not([hidden]) {
+    opacity: 0;
+    transform: translateY(var(--banner-shift)) scale(0.97);
+  }
+}
+
+@media (min-width: 640px) {
+  .dictation-banner {
+    --banner-shift: 25%;
+    position: absolute;
+    inset-block: auto calc(100% + var(--space-6));
+    inset-inline: 0;
+    transform-origin: bottom center;
+  }
+}
+
+.dictation-banner-dot {
+  flex: none;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--fg-body);
+}
+
+.dictation-banner[data-kind="listening"] .dictation-banner-dot {
+  background: var(--cta);
+  animation: listening-pulse 1s ease-in-out infinite alternate;
+}
+
+.dictation-banner[data-kind="error"] .dictation-banner-dot {
+  background: var(--danger);
+}
+
+.dictation-banner-text {
+  font-size: var(--text-body-s);
+  line-height: var(--leading-body-s);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.dictation-banner-close {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--fg-body);
+  cursor: pointer;
+}
+
+.dictation-banner-close svg {
+  width: var(--space-4);
+  height: var(--space-4);
+}
+
+.dictation-banner-close:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+@keyframes listening-pulse {
+  to {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dictation-banner,
+  .dictation-banner[hidden] {
+    transform: none;
+  }
+
+  @starting-style {
+    .dictation-banner:not([hidden]) {
+      transform: none;
+    }
+  }
+
+  .dictation-banner[data-kind="listening"] .dictation-banner-dot {
+    animation: none;
+  }
+}

@@ -1,9 +1,11 @@
 import { CalculatorIcon } from "lucide-react";
 import { type ComponentProps, useId, useState } from "react";
 import type { KeyAction, Operator } from "../calculatorState";
+import type { DictationStatus } from "../hooks/useDictation";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { keyActionId, shortcutsFor } from "../keyboardShortcuts";
 import Key from "./Key";
+import MicKey from "./MicKey";
 import "./Keypad.css";
 
 type KeyDefinition = {
@@ -11,11 +13,10 @@ type KeyDefinition = {
   action: KeyAction;
   name?: string;
   variant?: ComponentProps<typeof Key>["variant"];
-  size?: ComponentProps<typeof Key>["size"];
 };
 
-function digit(value: string, size?: KeyDefinition["size"]): KeyDefinition {
-  return { label: value, action: { type: "digit", digit: value }, size };
+function digit(value: string): KeyDefinition {
+  return { label: value, action: { type: "digit", digit: value } };
 }
 
 function operator(label: string, value: Operator, name: string): KeyDefinition {
@@ -56,7 +57,12 @@ const KEYS: KeyDefinition[] = [
   digit("2"),
   digit("3"),
   operator("+", "+", "plus"),
-  digit("0", "wide"),
+];
+
+const DICTATE_ACTION: KeyAction = { type: "dictate" };
+
+const LAST_ROW_KEYS: KeyDefinition[] = [
+  digit("0"),
   { label: ".", name: "point", action: { type: "point" } },
   {
     label: "=",
@@ -91,24 +97,27 @@ const FUNCTION_KEYS: KeyDefinition[] = [
 type KeypadProps = {
   selectedOperator: Operator | null;
   isPending: boolean;
+  dictationStatus: DictationStatus;
+  dictationLevel: number;
   onPress: (action: KeyAction) => void;
 };
 
 export default function Keypad({
   selectedOperator,
   isPending,
+  dictationStatus,
+  dictationLevel,
   onPress,
 }: KeypadProps) {
   const [areFunctionsOpen, setAreFunctionsOpen] = useState(false);
   const functionsId = useId();
   const heldKeyId = useKeyboardShortcuts(onPress);
 
-  function keyFor({ label, action, name, variant, size }: KeyDefinition) {
+  function keyFor({ label, action, name, variant }: KeyDefinition) {
     return (
       <Key
         key={label}
         variant={variant}
-        size={size}
         aria-label={name}
         aria-keyshortcuts={shortcutsFor(action)}
         data-held={keyActionId(action) === heldKeyId ? true : undefined}
@@ -146,6 +155,14 @@ export default function Keypad({
           <CalculatorIcon />
         </Key>
         {KEYS.map(keyFor)}
+        <MicKey
+          status={dictationStatus}
+          level={dictationLevel}
+          shortcuts={shortcutsFor(DICTATE_ACTION)}
+          isHeld={keyActionId(DICTATE_ACTION) === heldKeyId}
+          onPress={() => onPress(DICTATE_ACTION)}
+        />
+        {LAST_ROW_KEYS.map(keyFor)}
       </div>
     </div>
   );

@@ -25,11 +25,6 @@
   vertical-align: middle;
 }
 
-[data-slot="key"][data-size="wide"] {
-  grid-column: span 2;
-  aspect-ratio: auto;
-}
-
 [data-slot="key"][data-variant="operator"],
 [data-slot="key"][data-variant="secondary"] {
   background: var(--bg-tag);

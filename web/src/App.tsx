@@ -18,7 +18,12 @@ export default function App({ client }: AppProps) {
         <h1 className="app-name">sumthing</h1>
         <MuteToggle />
       </header>
-      <Calculator client={client} />
+      <div className="app-content">
+        <Calculator client={client} />
+        <p className="app-hint">
+          Type on your keyboard, or press <kbd>M</kbd> to dictate
+        </p>
+      </div>
     </main>
   );
 }

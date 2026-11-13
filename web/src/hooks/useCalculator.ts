@@ -1,7 +1,8 @@
 import { useReducer } from "react";
-import type { CalculatorClient } from "../calculatorClient";
+import type { CalculatorClient, Dictation } from "../calculatorClient";
 import {
-  type KeyAction,
+  type CalculatorKeyAction,
+  dictationScreenOf,
   initialState,
   nextState,
   screenOf,
@@ -21,7 +22,13 @@ export function useCalculator(client: CalculatorClient) {
     if (outcome.kind === "result") playPing();
   }
 
-  function press(action: KeyAction) {
+  function showDictation({ expression, result }: Dictation) {
+    dispatch({ type: "sent", expression });
+    dispatch({ type: "outcome", outcome: { kind: "result", result } });
+    playPing();
+  }
+
+  function press(action: CalculatorKeyAction) {
     if (action.type === "equals") {
       submit();
       return;
@@ -30,5 +37,10 @@ export function useCalculator(client: CalculatorClient) {
     dispatch(action);
   }
 
-  return { screen: screenOf(state), press };
+  return {
+    screen: screenOf(state),
+    dictationScreen: dictationScreenOf(state),
+    press,
+    showDictation,
+  };
 }

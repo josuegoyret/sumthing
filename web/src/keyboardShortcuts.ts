@@ -19,6 +19,7 @@ const SHORTCUTS: Shortcut[] = [
   { keys: ["^"], action: { type: "operator", operator: "^" } },
   { keys: ["%"], action: { type: "percent" } },
   { keys: ["r"], action: { type: "squareRoot" } },
+  { keys: ["m"], action: { type: "dictate" } },
   { keys: ["Enter", "="], action: { type: "equals" } },
   { keys: ["Backspace"], action: { type: "backspace" } },
   { keys: ["Escape", "Delete"], action: { type: "clear" } },

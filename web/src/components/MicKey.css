@@ -1,0 +1,45 @@
+.mic-key {
+  display: grid;
+  place-items: center;
+}
+
+.mic-key[aria-disabled="true"] {
+  opacity: 1;
+  cursor: progress;
+}
+
+.mic-key-spinner {
+  animation: mic-key-spin 600ms linear infinite;
+}
+
+.mic-key-meter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 1em;
+}
+
+.mic-key-bar {
+  width: var(--space-1);
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  transition: transform 80ms linear;
+}
+
+@keyframes mic-key-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mic-key-spinner {
+    animation: none;
+  }
+
+  .mic-key-bar {
+    transform: scaleY(0.6) !important;
+    transition: none;
+  }
+}
